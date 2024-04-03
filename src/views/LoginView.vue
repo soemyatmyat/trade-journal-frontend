@@ -18,6 +18,9 @@
         <div class="field col-12">
           <GuestPass />
         </div>
+        <div class="field col-12">
+          <InlineMessage v-if="showError" severity="error">{{errMsg}} :(</InlineMessage>
+        </div>
     </div>
 
   </div>
@@ -32,19 +35,35 @@
   const username = ref('');
   const password = ref('');
   const router = useRouter();
-
+  const showError = ref(false);
+  const errMsg = ref('Error logging in. Please try again later.');
 
   const callAuthenticationService = async (payload) => {
-    const token = await login(payload);
-    // localStorage.setItem('token', token);
-    sessionStorage.setItem("token", token);
-    router.push('/home');
+    try {
+      const token = await login(payload);
+      // localStorage.setItem('token', token);
+      sessionStorage.setItem("token", token);
+      router.push('/home');
+    } catch (error) {
+      // axois error: most likely authentication error  
+      if (error.response != undefined) {
+        if (error.response.data != undefined) {
+          if (error.response.data.detail != undefined) {
+            errMsg.value = error.response.data.detail;
+          }
+        }
+      }
+      
+      showError.value = true;
+
+    }
   }
 
   const handleLoginSubmit = () => {
     const params = new URLSearchParams();
     params.append('username', username.value);
     params.append('password', password.value);
+    //showError.value = true;
     callAuthenticationService(params);
   };
 
