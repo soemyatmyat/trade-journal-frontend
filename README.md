@@ -25,5 +25,6 @@ Trade journal for recording trading activites. It has never been easy to track y
 - Ready-made Components: [PrimeVue](https://primevue.org/)
 - CSS Utility: [PrimeFlex](https://primeflex.org)
 - UI Icons: primeicons
+- Logo: <a href="https://www.flaticon.com/free-icons/stock-market" title="stock market icons">Stock market icons created by Paul J. - Flaticon</a>
 
 ## References

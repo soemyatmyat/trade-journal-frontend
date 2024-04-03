@@ -2,7 +2,9 @@
   <div class="grid">
     <div class="col-4 col-offset-4">
       <div class="col-12">
-        <div class="text-center p-6 border-round-sm bg-primary font-bold">Trade Journal</div><br><br>
+        <div class="col-4 col-offset-4">
+        <Image src="/brand-logo.png" alt="trade-journal-logo" width="150" />
+        </div>
       </div>
         <div class="field col-12">
           <label for="username" class="form-label">Username</label><br>
