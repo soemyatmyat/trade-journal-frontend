@@ -14,7 +14,7 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [X] Dialog to add a new trading position 
 - [X] Edit, Delete existing positions UI
 - [X] Logout mechanism 
-- [ ] Include .env 
+- [X] Include .env 
 
 ## Iteration 0.2
 - [ ] Revisit indexed Data for updates
@@ -24,7 +24,7 @@ Trade journal for recording trading activites. It has never been easy to track y
 ## Credits 
 - Ready-made Components: [PrimeVue](https://primevue.org/)
 - CSS Utility: [PrimeFlex](https://primeflex.org)
-- UI Icons: primeicons
+- UI Icons: [primeicons](https://www.npmjs.com/package/primeicons)
 - Logo: <a href="https://www.flaticon.com/free-icons/stock-market" title="stock market icons">Stock market icons created by Paul J. - Flaticon</a>
 
 ## References
