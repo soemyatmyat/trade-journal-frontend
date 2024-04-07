@@ -21,6 +21,9 @@
           <GuestPass />
         </div>
         <div class="field col-12">
+          Note: Apologies for the delay in experience with API request processing. Backend is hosted on free server instance which spins down with inactivity. 
+        </div>
+        <div class="field col-12">
           <InlineMessage v-if="showError" severity="error">{{errMsg}} :(</InlineMessage>
         </div>
     </div>
@@ -30,7 +33,6 @@
 
 <script setup>
   import GuestPass from '@/components/GuestPass.vue'
-  // import GuestPass from '@/components/GuestPass.vue';
   import { ref } from 'vue';
   import login from '@/services/authapi';
   import { useRouter } from 'vue-router';

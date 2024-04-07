@@ -200,8 +200,8 @@
   onMounted(async () => {
     try {
       loading.value = true; 
-      //trades.value = await fetchTrades();
-      trades.value = getData(fetchFakeTrades());
+      trades.value = await fetchTrades();
+      //trades.value = getData(fetchFakeTrades());
       loading.value = false; 
       // test();
     } catch (error) {

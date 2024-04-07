@@ -1,7 +1,7 @@
 import axios from 'axios';
 const api = axios.create({
   // baseURL: 'https://trade-journal-5hot.onrender.com/',
-  baseURL: 'import.meta.env.VITE_BE_API',
+  baseURL: import.meta.env.VITE_BE_API,
   crossDomain: true,
 });
 
