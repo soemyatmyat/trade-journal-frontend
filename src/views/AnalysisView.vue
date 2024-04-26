@@ -54,7 +54,7 @@
 <script setup>
   import { ref } from 'vue';
   import { getHistoricalPrice } from '@/services/api';
-  import { stock_columns } from '@/components/columns.js';
+  import { stock_columns } from '@/components/Columns.js';
   import { formatDate, getHistogramValues } from '@/services/util';
 
   const showError = ref(false);
