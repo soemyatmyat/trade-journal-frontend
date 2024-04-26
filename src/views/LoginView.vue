@@ -24,6 +24,9 @@
           Note: Apologies for the delay in experience with API request processing. Backend is hosted on free server instance which spins down with inactivity. 
         </div>
         <div class="field col-12">
+          Also, check out <a href="/analyze" target="_blank">historical stock price analysis dashboard</a> to observe price volatility and identify the price patterns for your next move!
+        </div>
+        <div class="field col-12">
           <InlineMessage v-if="showError" severity="error">{{errMsg}} :(</InlineMessage>
         </div>
     </div>
@@ -70,5 +73,6 @@
     //showError.value = true;
     callAuthenticationService(params);
   };
+
 
 </script>

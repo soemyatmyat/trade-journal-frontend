@@ -45,4 +45,14 @@ export const getOption = (optionData) => {
   return api.post('/tickers/options/', optionData)
 }
 
+export const getHistoricalPrice = (ticker_id, from_date, to_date, frequency) => {
+  const params = {
+    from_date: from_date,
+    to_date: to_date,
+    frequency: frequency 
+  }
+
+  return api.get(`/tickers/historical_prices/${ticker_id}`, { params: params });
+}
+
 export default api

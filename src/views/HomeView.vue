@@ -9,7 +9,7 @@
         </template>
 
         <template #end>
-          <Button icon="pi pi-sign-out" class="mr-2" label="Exit" @click="logOut" />
+          <Logout />
         </template>
       </Toolbar>
     </div>
@@ -21,7 +21,7 @@
       <DataTable 
       v-model:filters="filters" :value="trades" @filter="recomputeBasedonFilters" 
       editMode="cell" @cell-edit-complete="onCellEditComplete" 
-      paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading" :size="size.value"
+      paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading" :size="'small'"
       :globalFilterFields="['category', 'open_date', 'close_date', 'ticker', 'qty', 'trade_price', 'closed_price', 'remark']">
       
       <!-- table headers -->
@@ -148,15 +148,17 @@
   import { getTicker, getOption } from '@/services/api'; 
   import { accessIndexedDB } from '@/services/indexedDb';
   import { FilterMatchMode } from 'primevue/api';
-  import { formatDate } from '@/services/util';
+  import { formatDate, fetchFakeTrades } from '@/services/util';
+  import { columns } from '@/components/columns.js';
+  import Logout from '@/components/Logout.vue'
 
-  const accessIndexedDb = accessIndexedDB('trades-journal', [['tickers', 'ticker'], ['options', 'id']]);
-  // const accessOptionIndexedDb = accessIndexedDB('trades-journal', 'options', 'id');
-  const size = ref({ label: 'Small', value: 'small' });
+
+  const accessIndexedDb = accessIndexedDB('trades-journal', [['tickers', 'ticker'], ['options', 'option_id']]);
   const showAddError = ref(false);
   const confirmDeleteDialog = ref(false);
   const tradeDialog = ref(false);
   const trades = ref();
+  // filters is dynamic 
   const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     category: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -174,22 +176,6 @@
     remark: { value: null, matchMode: FilterMatchMode.CONTAINS }
   });
   const loading = ref(true);
-  const columns = ref([
-    { field: 'category', header: 'Type', editable: true, options: ['Long', 'Put', 'Call', 'Short']},
-    { field: 'open_date', header: 'Open Date', editable: true, type: 'datepicker' },
-    { field: 'close_date', header: 'Close Date', editable: true, type: 'datepicker' },
-    { field: 'ticker', header: 'Ticker', editable: true },
-    { field: 'qty', header: 'Quantity', editable: true, type: 'float' },
-    { field: 'option_price', header: 'Option', editable: true, type: 'float' },
-    { field: 'trade_price', header: 'Trade Price', editable: true, type: 'float' },
-    { field: 'closed_price', header: 'Closed Price', editable: true, type: 'float' },
-    { field: 'currentPrice', header: 'Current Price', editable: false },
-    { field: 'cost', header: 'Cost', editable: false },
-    { field: 'netLiquid', header: 'Net Liquid', editable: false },
-    { field: 'profitLoss', header: 'Profit/Loss', editable: false },
-    // { field: 'remark', header: 'Remark', editable: true, type: 'text' }
-  ]);
-
   const trade = ref({});
   const filteredTrades = ref({});
   let totalCost = 0;
@@ -222,16 +208,15 @@
       if (existing == undefined) {
         const response = await getOption(queryOption);
         accessIndexedDb.storeData(response.data, "options")
-        console.log("response: ", response.data)
+        //console.log("response: ", response.data)
       } else {
-        console.log("existing: ", existing);
+        // console.log("existing: ", existing);
       }
       
     } catch (error) {
       console.error(error);
     }
   }
-
 
   const fetchTickerData = async (tradeElement) => {
     const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.ticker, "tickers");
@@ -252,7 +237,9 @@
     tradeElement.option_id = tradeElement.ticker + tradeElement.type + tradeElement.close_date + tradeElement.trade_price;
     const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.option_id, "options");
     if (existing == undefined) {
+      // check the expiry date: if expiry date is past today, update its closed_price
       const response = await getOption(tradeElement);
+      response.data.option_id = tradeElement.option_id;
       accessIndexedDb.storeData(response.data, "options");
       tradeElement.currentPrice = response.data.ask;
     } else {
@@ -318,7 +305,6 @@
     try {
       const response = await getPositions();
       const tradesData = response.data;
-
       const fetchTickerPromises = tradesData.map(processTradeElement);
       const resolvedTrades = await Promise.all(fetchTickerPromises);
 
@@ -335,74 +321,16 @@
     });
   };
 
-  const fetchFakeTrades = () => {
-    const tradesData = [];
-    const types = ['Long', 'Short', 'Call', 'Put'];
-    const tickers = ['AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA'];
-    const startDate = new Date(2023, 0, 1); // Start date for generating random dates
-    const endDate = new Date(); // End date is current date
-
-    for (let i = 0; i < 16; i++) {
-      const category = types[Math.floor(Math.random() * types.length)];
-      const openDate = formatDate(new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())));
-      const closeDate = formatDate(new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())));
-      const ticker = tickers[Math.floor(Math.random() * tickers.length)];
-      const qty = Math.floor(Math.random() * 100) + 1; // Random quantity between 1 and 1000
-      const trade_price = parseFloat((Math.random() * 1000).toFixed(2)); // Random trade price
-      let closed_price = parseFloat((Math.random() * 1000).toFixed(2)); // Random current price
-      // if (category  == 'Long' || category == 'Short') { // this should be done parallel 
-      //   fetchCurrentPrice(ticker);
-      // }
-      const currentPrice = parseFloat((Math.random() * 1000).toFixed(2)); // Random current price
-      let cost = parseFloat((qty * trade_price).toFixed(2)); // Cost calculation
-      let netLiquid = parseFloat((qty * currentPrice).toFixed(2)); // Net liquid calculation
-      let profitLoss = parseFloat((netLiquid - cost).toFixed(2)); // Profit/Loss calculation
-      let option_price = null;
-      if (category === 'Put' || category === 'Call') {
-        option_price = parseFloat((Math.random() * 100).toFixed(2));
-        cost = option_price;
-        netLiquid = option_price;
-        profitLoss = option_price
-        closed_price = null;
-      }
-
-      const remark = Math.random() < 0.5 ? 'Profit' : 'Loss'; // Random remark
-
-      tradesData.push({
-        id: i + 1,
-        category: category,
-        open_date: openDate,
-        close_date: closeDate,
-        ticker: ticker,
-        qty: qty,
-        option_price: option_price,
-        trade_price: trade_price,
-        closed_price: closed_price,
-        currentPrice: currentPrice,
-        cost: cost,
-        netLiquid: netLiquid,
-        profitLoss: profitLoss,
-        remark: remark
-      });
-    }
-
-    // console.log(tradesData);
-    return tradesData;
-  };
-
   const confirmDelete = (ele) => {
       trade.value = ele;
-      console.log("Delete::::", trade);
       confirmDeleteDialog.value = true;
 
   };
 
   const deleteTrade = () => {
-    console.log(trade.value.id)
     removePosition(trade.value.id)
       .then(response => {
-        console.log(response);
-        console.log("deleted")
+        // console.log(response);
         trades.value = trades.value.filter(val => val.id != trade.value.id);
         trade.value = {};
         confirmDeleteDialog.value = false;
@@ -443,7 +371,7 @@
 
     try {
       const response = await addNewPosition(addTradeObject);
-      addTradeObject = await processTradeElement(addTradeObject);
+      addTradeObject = await processTradeElement(response.data);
       trades.value.push(addTradeObject);
       tradeDialog.value = false;
 
@@ -470,7 +398,7 @@
         }
         updatePosition(updateTradeObject.id, updateTradeObject) 
           .then(response => {
-            console.log("OK: ", response.data);
+            // console.log("OK: ", response.data);
           })
           .catch(error => {
             console.error(error);
@@ -481,7 +409,6 @@
 
   const recomputeBasedonFilters = (filterEvent) => {
     // Retrieve filtered data from filterEvent and update totals
-    console.log("Recomputing");
     filteredTrades.value = filterEvent.filteredValue;
     totalCost = 0;
     totalNetLiquid = 0;
@@ -491,18 +418,17 @@
         totalNetLiquid += e.netLiquid;
         totalProfitLoss += e.profitLoss;
     }
-    console.log("totalNetLiquid: ", totalNetLiquid)
 
   };
 
 
-  import { useRouter } from 'vue-router';
-  const router = useRouter();
+  // import { useRouter } from 'vue-router';
+  // const router = useRouter();
   
-  const logOut = () => {
-    sessionStorage.removeItem("token");
-    router.push('/');
-  }
+  // const logOut = () => {
+  //   sessionStorage.removeItem("token");
+  //   router.push('/');
+  // }
 
 </script>
 

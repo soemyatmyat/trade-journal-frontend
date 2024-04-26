@@ -6,6 +6,19 @@ export const formatDate = (value) => {
   return `${year}-${month}-${day}`;
 };
 
+// Build a range centered on median, std is step. 
+export const builtRange = (start, end, mid, step = 1) => {
+  const result = [];
+  const midPoint = mid - step/2;
+  for (let i = midPoint; i < end + step/2; i += step) {
+    result.push(i);
+  }
+  for (let i = midPoint-step; i > start - step/2; i -= step) {
+      result.push(i);
+  }
+  return result.sort((a, b) => a - b);;
+}
+
 export const fetchFakeTrades = () => {
   const tradesData = [];
   const types = ['Long', 'Short', 'Call', 'Put'];
@@ -60,3 +73,33 @@ export const fetchFakeTrades = () => {
   // console.log(tradesData);
   return tradesData;
 };
+
+// given an array as an input, this function returns bin midpoint, frequency and bin width 
+export const getHistogramValues = (arr) => {
+  const sortedArr= arr.sort((a, b) => a - b); // sort first 
+  const len = sortedArr.length;
+  // get stats 
+  const minValue = sortedArr[0];
+  const maxValue = sortedArr[len-1];
+  const middleIndex = Math.floor(len / 2);
+  let median;
+  if (len % 2 === 0) {
+    median = (sortedArr[middleIndex - 1] + sortedArr[middleIndex]) / 2;
+  } else {
+    median = sortedArr[middleIndex];
+  }
+  const meanValue = arr.reduce((acc, val) => acc + val, 0) / len;
+  const variance = arr.reduce((acc, val) => acc + Math.pow(val - meanValue, 2), 0) / len;
+  const binWidth = Math.ceil(Math.sqrt(variance));
+  const binEdges = builtRange(Math.floor(minValue), Math.ceil(maxValue), Math.floor(median), binWidth);
+  const frequency = Array(binEdges.length).fill(0);
+  for (const ele of sortedArr) {
+    for (let i = 0; i < binEdges.length; i++) {
+      if (ele > (binEdges[i] - binWidth/2) && ele < (binEdges[i] + binWidth/2)) {
+          frequency[i]++;
+          break; // Exit the inner loop once the bin is found
+      }
+    }
+  }
+  return { binEdges, frequency, binWidth };
+}

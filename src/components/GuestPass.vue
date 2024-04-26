@@ -24,7 +24,7 @@ const visible = ref(false);
 
 const showTemplate = () => {
     if (!visible.value) {
-        toast.add({ severity: 'success', title: 'Guess Pass', text1: 'username: guest-5291', text2:'password: ]Jvx8BVDnB+{w', group: 'bc' });
+        toast.add({ severity: 'success', title: 'Guest Pass', text1: 'username: guest-5291', text2:'password: ]Jvx8BVDnB+{w', group: 'bc' });
         visible.value = true;
     } 
     setTimeout(() => {

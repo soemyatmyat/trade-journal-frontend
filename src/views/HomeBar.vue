@@ -58,6 +58,8 @@
 
 <script setup>
     import TestBlock from '@/components/TestBlock.vue'
+		import { columns } from '@/components/Columns.vue'
+
 		import {ref} from 'vue';
 
 		const trade = ref({});
