@@ -56,7 +56,7 @@
 
 
 <script setup>
-		import { columns } from '@/components/columns.js';
+		import { columns } from '@/components/Columns.js';
 
 		import {ref} from 'vue';
 
