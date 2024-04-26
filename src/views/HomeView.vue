@@ -149,7 +149,7 @@
   import { accessIndexedDB } from '@/services/indexedDb';
   import { FilterMatchMode } from 'primevue/api';
   import { formatDate, fetchFakeTrades } from '@/services/util';
-  import { columns } from '@/components/columns.js';
+  import { columns } from '@/components/Columns.js';
   import Logout from '@/components/Logout.vue'
 
 
