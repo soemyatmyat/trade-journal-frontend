@@ -51,6 +51,7 @@ export const getHistoricalPrice = (ticker_id, from_date, to_date, frequency) => 
     to_date: to_date,
     frequency: frequency 
   }
+  // console.log("Params: ", params);
 
   return api.get(`/tickers/historical_prices/${ticker_id}`, { params: params });
 }

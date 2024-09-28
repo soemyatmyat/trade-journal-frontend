@@ -22,7 +22,6 @@
   })
 
   const setChartData = (diffs) => {
-    console.log(diffs);
     const { binEdges, frequency, binWidth } = getHistogramValues(diffs);
     const bgColor = binEdges.map(ele => {
       return ele > 0 ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)'; 

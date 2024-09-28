@@ -1,12 +1,11 @@
 <template>
   <h3 style="text-align:center;">{{ title }}</h3>
-  <Chart type="line" :data="chartData" :options="chartOptions"/>
+  <Chart type="bar" :data="chartData" :options="chartOptions"/>
 </template>
 
 <script setup>
   import { ref, watch } from 'vue';
   import Chart from 'primevue/chart';
-  import { getHistogramValues } from '@/services/util';
 
   const chartData = ref();
   const chartOptions = ref();
@@ -21,11 +20,29 @@
   })
 
   const setChartData = (x, y) => {
+    let cumulativeSum = 0;
+    const cumulative_y = y.map(value => cumulativeSum += value);
+    
+    const bgColor = y.map(ele => {
+      return ele > 0 ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)'; 
+    });
     return {
         labels: x,
         datasets: [
-            {
+            {   
+                type: 'bar',
                 data: y,
+                label: 'Weekly',
+                backgroundColor: bgColor,
+            },
+            {
+                type: 'line',
+                data: cumulative_y,
+                label: 'Cumulative',
+                borderColor: 'rgba(249, 180, 45)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
             }
         ]
     };

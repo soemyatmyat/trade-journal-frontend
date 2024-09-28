@@ -49,6 +49,11 @@
       </div>
     </div>
   </div>
+  <div class="grid">
+    <div class="col-12">
+      <h3 style="text-align:center;">SEC Form 4 Insider Trading </h3>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -62,8 +67,8 @@
   const data = ref();
   const ticker = ref({
     symbol: 'AAPL',
-    from: '2024-01-01',
-    to: formatDate(new Date()),
+    from: new Date('2024-01-01'),
+    to: new Date(Date.now()),
     frequency: 'Weekly'
   })
 
@@ -89,10 +94,15 @@
       // retrieve the historical prices: START //
       showError.value = false;
       let query = JSON.parse(JSON.stringify(ticker.value));
+      // console.log("query: ", query);
+
       query.from = formatDate(query.from);
       query.to = formatDate(query.to);
+      // console.log("from: ", query.from);
+      // console.log("to: ", query.to);
       const response = await getHistoricalPrice(query.symbol, query.from, query.to, 'W')
       data.value = response.data
+      // console.log("Response: ", data.value)
       // retrieve the historical prices: END //
 
       // charting: START // 
