@@ -1,6 +1,5 @@
 import axios from 'axios';
 const api = axios.create({
-  // baseURL: 'https://trade-journal-5hot.onrender.com/',
   baseURL: import.meta.env.VITE_BE_API,
   crossDomain: true,
 });
@@ -54,6 +53,10 @@ export const getHistoricalPrice = (ticker_id, from_date, to_date, frequency) => 
   // console.log("Params: ", params);
 
   return api.get(`/tickers/historical_prices/${ticker_id}`, { params: params });
+}
+
+export const getMetrics = (ticker_id) => {
+  return api.get(`/tickers/metrics/${ticker_id}`);
 }
 
 export default api

@@ -50,3 +50,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.p-card .p-card-content {
+  padding: 0;
+}

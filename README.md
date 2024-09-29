@@ -26,7 +26,8 @@ Trade journal for recording trading activites. It has never been easy to track y
   - [X] Price Movement Histogram 
   - [X] Line Chart
   - [X] Sentimental Donut 
-- [ ] Date confusion: https://www.fullstackfoundations.com/blog/javascript-dates
+- [X] Date confusion: https://www.fullstackfoundations.com/blog/javascript-dates
+  - [X] Javascript new date must be converted to UTC as it functions differently depending on whether new date is generated from the server or from the browser. 
 ## Iteration 0.3
 - [ ] Revisit the codes and look for component abstraction implementation (vue specific)
 
@@ -38,6 +39,6 @@ Trade journal for recording trading activites. It has never been easy to track y
 - Visualization Brainstrom: [Nuts and Bolts of Chart Types](https://cdn-infographic.pressidium.com/wp-content/uploads/Graph-and-Chart-Types-Infographic.jpg)
 
 ## References
-- 
+- [JavaScript Dates](https://www.fullstackfoundations.com/blog/javascript-dates)
 
 

@@ -25,6 +25,32 @@
   </div>
   <!-- Returns -->
   <div class="grid nested-grid">
+    <!--  <div class="col-12">
+    <Card>
+      <template #content>
+          <ul class="metrics-list">
+           <li><span class="label">Volume</span><span class="value">{{ stats.volume }}</span></li> -->
+            <!-- <li><span class="label">VWAP</span></li> -->
+            <!-- <li><span class="label">Avg. Volume</span><span class="value">{{ stats.averageVolume }}</span></li>
+            <li><span class="label">Yield</span><span class="value">{{ stats.dividendYield }}</span></li>
+            <li><span class="label">Put/Call Ratio</span><span class="value"></span></li>
+            <li><span class="label">Beta</span><span class="value">{{ stats.beta }}</span></li>
+            <li><span class="label">IV(%)</span><span class="value"></span></li>
+            <li><span class="label">PE</span><span class="value">{{ stats.trailingPE }}</span></li>
+            <li><span class="label">Dividend</span><span class="value">{{ stats.dividend }}</span></li>
+            <li><span class="label">Market Maker Move</span><span class="value"></span></li>
+            <li><span class="label">Mkt Cap</span><span class="value">{{ stats.marketCap }}</span></li>
+            <li><span class="label">HV(%)</span><span class="value"></span></li>
+            <li><span class="label">EPS</span><span class="value">{{ stats.eps }}</span></li>
+            <li><span class="label">Ex Date</span><span class="value">{{ stats.exDividendDate }}</span></li>
+            <li><span class="label">Upcoming Earnings</span><span class="value">{{ stats.upcoming_earnings_date }}</span></li> 
+          </ul>
+      </template>
+    </Card>
+    </div>  -->
+    <div class="col-12">
+      <MetricsCard title="Key Metrics" :metrics="stats.data" />
+    </div>
     <!-- Table -->
     <div class="col-5">
       <DataTable :value="data" paginator :rows="25" :rowsPerPageOptions="[25, 55, 40, 50]">
@@ -58,7 +84,7 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { getHistoricalPrice } from '@/services/api';
+  import { getHistoricalPrice, getMetrics } from '@/services/api';
   import { stock_columns } from '@/components/Columns.js';
   import { formatDate, getHistogramValues } from '@/services/util';
 
@@ -67,11 +93,15 @@
   const data = ref();
   const ticker = ref({
     symbol: 'AAPL',
-    from: new Date('2024-01-01'),
-    to: new Date(Date.now()),
+    from: formatDate(new Date('2024-01-01')), 
+    to: formatDate(new Date(Date.now())),
     frequency: 'Weekly'
   })
 
+  const stats = ref({
+    title: '',
+    data: [],
+  });
 
   const histChart = ref({
     title: '',
@@ -94,16 +124,17 @@
       // retrieve the historical prices: START //
       showError.value = false;
       let query = JSON.parse(JSON.stringify(ticker.value));
-      // console.log("query: ", query);
-
-      query.from = formatDate(query.from);
-      query.to = formatDate(query.to);
-      // console.log("from: ", query.from);
-      // console.log("to: ", query.to);
       const response = await getHistoricalPrice(query.symbol, query.from, query.to, 'W')
       data.value = response.data
       // console.log("Response: ", data.value)
       // retrieve the historical prices: END //
+
+      // retrieve the stats: START // 
+      const res = await getMetrics(query.symbol);
+      //console.log("res: ", res.data);
+      stats.value.data = res.data;
+      //console.log("Response: ", something)
+      // retrieve the stats: END // 
 
       // charting: START // 
       const diffs = data.value.map(item => item.diff);
