@@ -25,29 +25,6 @@
   </div>
   <!-- Returns -->
   <div class="grid nested-grid">
-    <!--  <div class="col-12">
-    <Card>
-      <template #content>
-          <ul class="metrics-list">
-           <li><span class="label">Volume</span><span class="value">{{ stats.volume }}</span></li> -->
-            <!-- <li><span class="label">VWAP</span></li> -->
-            <!-- <li><span class="label">Avg. Volume</span><span class="value">{{ stats.averageVolume }}</span></li>
-            <li><span class="label">Yield</span><span class="value">{{ stats.dividendYield }}</span></li>
-            <li><span class="label">Put/Call Ratio</span><span class="value"></span></li>
-            <li><span class="label">Beta</span><span class="value">{{ stats.beta }}</span></li>
-            <li><span class="label">IV(%)</span><span class="value"></span></li>
-            <li><span class="label">PE</span><span class="value">{{ stats.trailingPE }}</span></li>
-            <li><span class="label">Dividend</span><span class="value">{{ stats.dividend }}</span></li>
-            <li><span class="label">Market Maker Move</span><span class="value"></span></li>
-            <li><span class="label">Mkt Cap</span><span class="value">{{ stats.marketCap }}</span></li>
-            <li><span class="label">HV(%)</span><span class="value"></span></li>
-            <li><span class="label">EPS</span><span class="value">{{ stats.eps }}</span></li>
-            <li><span class="label">Ex Date</span><span class="value">{{ stats.exDividendDate }}</span></li>
-            <li><span class="label">Upcoming Earnings</span><span class="value">{{ stats.upcoming_earnings_date }}</span></li> 
-          </ul>
-      </template>
-    </Card>
-    </div>  -->
     <div class="col-12">
       <MetricsCard title="Key Metrics" :metrics="stats.data" />
     </div>
