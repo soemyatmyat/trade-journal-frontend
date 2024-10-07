@@ -20,6 +20,8 @@
 
   // Function to format the labels
   const formatLabel = (label) => {
+    if (label === label.toUpperCase()) 
+      return label; // Return the label as is if it's all uppercase
     return label
       .replace(/([A-Z])/g, ' $1') // Add a space before capital letters
       .replace(/^./, (str) => str.toUpperCase()) // Capitalize the first letter

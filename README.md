@@ -29,7 +29,9 @@ Trade journal for recording trading activites. It has never been easy to track y
   - [X] Added Stock Metrics
 - [X] Date confusion: https://www.fullstackfoundations.com/blog/javascript-dates
   - [X] Javascript new date must be converted to UTC as it functions differently depending on whether new date is generated from the server or from the browser. 
+
 ## Iteration 0.3
+- [ ] Add a new chart to record streak (max => no: of week, min => 1, only display existing streaks but differentiate neutral, bullish, bearish streaks, for example, if 3 positive streak does not exist, we don't need to show it in the chart)
 - [ ] Revisit the codes and look for component abstraction implementation (vue specific)
 
 ## Credits 

@@ -25,12 +25,13 @@
   </div>
   <!-- Returns -->
   <div class="grid nested-grid">
+    <!-- Technical indicators/metrics -->
     <div class="col-12">
       <MetricsCard title="Key Metrics" :metrics="stats.data" />
     </div>
     <!-- Table -->
     <div class="col-5">
-      <DataTable :value="data" paginator :rows="25" :rowsPerPageOptions="[25, 55, 40, 50]">
+      <DataTable :value="data" paginator :rows="30" :rowsPerPageOptions="[30, 60, 90, 120]">
         <template #header><div style="text-align: left"><Button disabled icon="pi pi-external-link" label="Export" /></div></template>
         <template #empty>No data found. </template>
         <template #loading>Loading data. Please wait. </template>
@@ -101,6 +102,8 @@
       // retrieve the historical prices: START //
       showError.value = false;
       let query = JSON.parse(JSON.stringify(ticker.value));
+      query.from = formatDate(new Date(query.from));
+      query.to = formatDate(new Date(query.to) + 1);
       const response = await getHistoricalPrice(query.symbol, query.from, query.to, 'W')
       data.value = response.data
       // console.log("Response: ", data.value)
@@ -108,15 +111,18 @@
 
       // retrieve the stats: START // 
       const res = await getMetrics(query.symbol);
-      //console.log("res: ", res.data);
       stats.value.data = res.data;
-      //console.log("Response: ", something)
       // retrieve the stats: END // 
 
       // charting: START // 
+      // console.log(data.value);
       const diffs = data.value.map(item => item.diff);
       const dates = data.value.map(item => item.Date);
       const percentages = data.value.map(item => item.percentage);
+
+      console.log(diffs);
+      console.log(diffs[0]);
+
       histChart.value.title = "Price Movement Histogram";
       histChart.value.data = diffs;
       donutChart.value.title = "Sentimental Donut";
