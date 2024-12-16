@@ -105,4 +105,54 @@ export const getHistogramValues = (arr) => {
   return { binEdges, frequency, binWidth };
 }
 
+// given an array as an input, this function returns an array of max streaks for neg, nc, pos 
+export const getStreakValues = (arr) => {
+
+  const sortedArr= arr.sort((a, b) => a - b); // sort first 
+  const len = sortedArr.length;
+  // get stats 
+  const minValue = sortedArr[0];
+  const maxValue = sortedArr[len-1];
+  const middleIndex = Math.floor(len / 2);
+  let median;
+  if (len % 2 === 0) {
+    median = (sortedArr[middleIndex - 1] + sortedArr[middleIndex]) / 2;
+  } else {
+    median = sortedArr[middleIndex];
+  }
+  const meanValue = arr.reduce((acc, val) => acc + val, 0) / len;
+  const variance = arr.reduce((acc, val) => acc + Math.pow(val - meanValue, 2), 0) / len;
+  const binWidth = Math.ceil(Math.sqrt(variance));
+
+  const data = new Map();
+  data.set("pos",0);
+  data.set("neg",0);
+  data.set("neu",0);
+  const threshold = binWidth/2; 
+  let changeStatus = true; 
+  let prevStatus = "pos";
+  let counter = 0;
+  let currStatus = "";
+
+  for (const ele of arr) {
+    if (ele >= -threshold && ele <= threshold) { // if diff is within +/- of threshold 
+      currStatus = "neu";
+    } else if (ele > threshold) {
+      currStatus = "pos";
+    } else if (ele < -threshold) {
+      currStatus = "neg"
+    }
+    changeStatus = prevStatus != currStatus; // return true when the status has been changed
+    if (changeStatus) { 
+      data.set(prevStatus, Math.max(data.get(prevStatus), counter)) // compare and get the max for previous status
+      counter = 0
+      prevStatus = currStatus;
+    } 
+    counter += 1;
+    // console.log("ele: ", ele, ", curr_status: ", currStatus, ", prev_status: ", prevStatus, ", change_status: ", changeStatus, ", counter: ", counter);
+  }
+  data.set(currStatus, Math.max(data.get(currStatus), counter)) // getting out of the loop
+  
+  return [data.get("neg"), data.get("neu"), data.get("pos")];
+}
 

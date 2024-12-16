@@ -41,14 +41,19 @@
     <!-- Charts -->
     <div class="col-7">
       <div class="grid nested-grid">
-        <div class="col-6">     
+        <div class="col-6"> <!-- Price Movement Historgram -->    
           <Histogram :title="histChart.title" :data="histChart.data" />
         </div>
-        <div class="col-6">
+        <div class="col-6"> <!-- Sentimental Donut -->
           <Donut :title="donutChart.title" :data="donutChart.data" />
         </div>
-        <div class="col-12">
+        <div class="col-12"> <!-- Percentage Change in Price -->
           <LineChart :title="lineChart.title" :data="lineChart.data" />
+        </div>
+        <div class="col-6"> <!-- Longest Streaks Pie -->
+          <Pie :title="pieChart.title" :data="pieChart.data" />
+        </div>
+        <div class="col-6">
         </div>
       </div>
     </div>
@@ -96,6 +101,9 @@
     data: [],
   })
 
+  const pieChart = ref({
+    title: ''
+  })
 
   const retrieveData = async () => {    
     try {
@@ -114,14 +122,11 @@
       stats.value.data = res.data;
       // retrieve the stats: END // 
 
-      // charting: START // 
+      // === charting: START === // 
       // console.log(data.value);
       const diffs = data.value.map(item => item.diff);
       const dates = data.value.map(item => item.Date);
       const percentages = data.value.map(item => item.percentage);
-
-      console.log(diffs);
-      console.log(diffs[0]);
 
       histChart.value.title = "Price Movement Histogram";
       histChart.value.data = diffs;
@@ -129,7 +134,11 @@
       donutChart.value.data = diffs;
       lineChart.value.title = "Percentage Change in Price";
       lineChart.value.data = [dates.reverse(), percentages.reverse()];
-      // charting: END // 
+      pieChart.value.title = "Longest Streaks"
+      pieChart.value.data = diffs;
+
+      // === charting: END === // 
+
     } catch (error) {
       showError.value = true;
       if (error.response != undefined) {

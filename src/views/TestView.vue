@@ -52,6 +52,12 @@
 		</template>
 	</Dialog>
 
+	<div class="grid">
+		<div class="row">
+			<div class="col-12"><Pie :title="pieChart.title" /></div>
+		</div>
+	</div>
+
 </template>
 
 
@@ -87,5 +93,11 @@
 		const logOut = () => {
 			console.log("Logging out");
 		}
+
+		// == testing pie chart == //
+		const pieChart = ref({
+    	title: 'Pie chart test',
+			data: [],
+  	})
 
 </script>
