@@ -77,7 +77,7 @@ export const fetchFakeTrades = () => {
 
 // given an array as an input, this function returns bin midpoint, frequency and bin width 
 export const getHistogramValues = (arr) => {
-  const sortedArr= arr.sort((a, b) => a - b); // sort first 
+  const sortedArr= [...arr].sort((a, b) => a - b); // sort first 
   const len = sortedArr.length;
   // get stats 
   const minValue = sortedArr[0];
@@ -107,8 +107,7 @@ export const getHistogramValues = (arr) => {
 
 // given an array as an input, this function returns an array of max streaks for neg, nc, pos 
 export const getStreakValues = (arr) => {
-
-  const sortedArr= arr.sort((a, b) => a - b); // sort first 
+  const sortedArr= [...arr].sort((a, b) => a - b); // sort first 
   const len = sortedArr.length;
   // get stats 
   const minValue = sortedArr[0];
@@ -150,6 +149,7 @@ export const getStreakValues = (arr) => {
     } 
     counter += 1;
     // console.log("ele: ", ele, ", curr_status: ", currStatus, ", prev_status: ", prevStatus, ", change_status: ", changeStatus, ", counter: ", counter);
+    // console.log("neg: ", data.get("neg"), "neu: ", data.get("neu"), "pos: ", data.get("pos"));
   }
   data.set(currStatus, Math.max(data.get(currStatus), counter)) // getting out of the loop
   
