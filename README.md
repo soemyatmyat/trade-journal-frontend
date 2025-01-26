@@ -27,10 +27,11 @@ Trade journal for recording trading activites. It has never been easy to track y
   - [X] Line Chart
   - [X] Sentimental Donut 
   - [X] Added Stock Metrics
+  - [X] Usability: detect enter key for the dashboard
 - [X] Date confusion: https://www.fullstackfoundations.com/blog/javascript-dates
   - [X] Javascript new date must be converted to UTC as it functions differently depending on whether new date is generated from the server or from the browser. 
 
-## Iteration 0.3
+## Iteration 0.3 
 - [X] Add a new chart to record max streaks for positive, negative and neutral metrics. Price movement is considered to be in neutral range if it is within one bandwidth. 
 - [ ] Revisit the codes and look for component abstraction implementation (vue specific)
 

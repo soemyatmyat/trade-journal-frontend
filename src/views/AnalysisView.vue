@@ -4,7 +4,7 @@
     <div class="col-8 col-offset-2">
       <div class="formgroup-inline">
         <div class="field">
-          <label>Ticker </label><InputText v-model="ticker.symbol" />
+          <label>Ticker </label><InputText v-model="ticker.symbol" @keyup.enter="retrieveData"/>
         </div>
         <div class="field">
           <label>From </label> <Calendar v-model="ticker.from" dateFormat="yy-mm-dd" showButtonBar />
@@ -150,6 +150,5 @@
       }
     }
   }
-
 
 </script>
