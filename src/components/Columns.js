@@ -16,7 +16,7 @@ export const columns = [
 
 export const stock_columns = [
   { field: 'Date', header: 'Date' },
-  { field: 'Adj Close', header: 'Adj Close' },
+  { field: 'close', header: 'Adj Close' },
   { field: 'prev', header: 'Previous' },
   { field: 'diff', header: 'Difference' },
   { field: 'percentage', header: 'Percentage Change' }
