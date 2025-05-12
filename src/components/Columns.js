@@ -22,3 +22,17 @@ export const stock_columns = [
   { field: 'percentage', header: 'Percentage Change' }
 ]
 
+export const insider_trades_columns = [
+  { field: 'filing_date', header: 'Filing Date' },
+  { field: 'trade_date', header: 'Trade Date' },
+  { field: 'ticker', header: 'Ticker' },
+  { field: 'company_name', header: 'Company Name' },
+  { field: 'insider_name', header: 'Insider Name' },
+  { field: 'insider_title', header: 'Insider Title' },
+  { field: 'trade_type', header: 'Trade Type' },
+  { field: 'price', header: 'Price' },
+  { field: 'qty', header: 'Qty' },
+  { field: 'owned', header: 'Owned' },
+  { field: 'delta_owned', header: 'Delta Owned' },
+  { field: 'value', header: 'Value' }
+]

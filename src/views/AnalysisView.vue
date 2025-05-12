@@ -61,6 +61,12 @@
   <div class="grid">
     <div class="col-12">
       <h3 style="text-align:center;">SEC Form 4 Insider Trading </h3>
+      <DataTable :value="insidertradesData" paginator :rows="30" :rowsPerPageOptions="[30, 60, 90, 120]">
+        <template #header><div style="text-align: left"><Button disabled icon="pi pi-external-link" label="Export" /></div></template>
+        <template #empty>No data found. </template>
+        <template #loading>Loading data. Please wait. </template>
+        <column v-for="col of insider_trades_columns" :field="col.field" :header="col.header" style="text-align: center"></column>
+      </DataTable>
     </div>
   </div>
 </template>
@@ -68,12 +74,14 @@
 <script setup>
   import { ref } from 'vue';
   import { getHistoricalPrice, getMetrics } from '@/services/api';
-  import { stock_columns } from '@/components/Columns.js';
+  import { stock_columns, insider_trades_columns } from '@/components/Columns.js';
   import { formatDate, getHistogramValues } from '@/services/util';
+  import { getInsiderTrades } from '@/services/insidertrades';
 
   const showError = ref(false);
   const errMsg = ref('');
   const data = ref();
+  const insidertradesData = ref();
   const ticker = ref({
     symbol: 'AAPL',
     from: formatDate(new Date('2024-01-01')), 
@@ -107,7 +115,7 @@
 
   const retrieveData = async () => {    
     try {
-      // retrieve the historical prices: START //
+      // === retrieve the historical prices: START === //
       showError.value = false;
       let query = JSON.parse(JSON.stringify(ticker.value));
       query.from = formatDate(new Date(query.from));
@@ -115,9 +123,9 @@
       const response = await getHistoricalPrice(query.symbol, query.from, query.to, 'W')
       data.value = response.data
       // console.log("Response: ", data.value)
-      // retrieve the historical prices: END //
+      // === retrieve the historical prices: END === //
 
-      // retrieve the stats: START // 
+      // === retrieve the stats: START === // 
       const res = await getMetrics(query.symbol);
       stats.value.data = res.data;
       // retrieve the stats: END // 
@@ -139,7 +147,13 @@
 
       // === charting: END === // 
 
+      // === SEC Form 4 insider trading: START === //
+      const insideTradesRes = await getInsiderTrades(query.symbol, query.from, query.to);
+      insidertradesData.value = insideTradesRes.data;
+      // === SEC Form 4 insider trading: END === //
+
     } catch (error) {
+      console.log("Error: ", error);
       showError.value = true;
       if (error.response != undefined) {
         if (error.response.data != undefined) {
