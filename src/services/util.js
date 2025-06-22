@@ -155,4 +155,3 @@ export const getStreakValues = (arr) => {
   
   return [data.get("neg"), data.get("neu"), data.get("pos")];
 }
-

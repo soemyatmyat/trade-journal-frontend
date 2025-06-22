@@ -35,6 +35,7 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [X] Add a new chart to record max streaks for positive, negative and neutral metrics. Price movement is considered to be in neutral range if it is within one bandwidth. 
 - [ ] Revisit the codes and look for component abstraction implementation (vue specific)
 - [X] Integrate with open-insider-trades for SEC Form 4 insider trading data
+  - [X] Add methods to get a new token with the refresh_token in httpOnly Cookie and csrf_token 
 
 ## Credits 
 - Ready-made Components: [PrimeVue](https://primevue.org/)

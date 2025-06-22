@@ -8,6 +8,12 @@ import {PrimeVueResolver} from 'unplugin-vue-components/resolvers'; // auto-impo
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    https: {
+      key: fileURLToPath(new URL('./certs/localhost-key.pem', import.meta.url)),
+      cert: fileURLToPath(new URL('./certs/localhost.pem', import.meta.url))
+    }
+  },
   plugins: [
     vue(), 
     vueJsx(),
