@@ -25,13 +25,14 @@
   </div>
   <!-- Returns -->
   <div class="grid nested-grid">
-    <!-- Technical indicators/metrics -->
+    <!-- Spinner -->
     <div class="col-12 text-center" v-if="isLoading">
       <div class="spinner-border text-primary" role="status">
         <ProgressSpinner style="width: 50px; height: 50px;" />
         <span class="text-center">Loading...</span>
       </div>
     </div>
+    <!-- Technical indicators/metrics -->
     <div class="col-12" v-if="stats.data && Object.keys(stats.data).length">
       <MetricsCard title="Key Metrics" :metrics="stats.data" />
     </div>
@@ -47,13 +48,13 @@
     <!-- Charts -->
     <div class="col-7">
       <div class="grid nested-grid">
-        <div class="col-6"> <!-- Price Movement Historgram -->    
+        <div class="col-6" > <!-- Price Movement Historgram -->    
           <Histogram :title="histChart.title" :data="histChart.data" />
         </div>
-        <div class="col-6"> <!-- Sentimental Donut -->
+        <div class="col-6" > <!-- Sentimental Donut -->
           <Donut :title="donutChart.title" :data="donutChart.data" />
         </div>
-        <div class="col-12"> <!-- Percentage Change in Price -->
+        <div class="col-12" > <!-- Percentage Change in Price -->
           <LineChart :title="lineChart.title" :data="lineChart.data" />
         </div>
         <div class="col-6"> <!-- Longest Streaks Pie -->
@@ -117,16 +118,18 @@
   })
 
   const pieChart = ref({
-    title: ''
+    title: '',
+    data: [],
   })
 
   const retrieveData = async () => {    
     try {
       isLoading.value = true;
       showError.value = false;
-      let query = JSON.parse(JSON.stringify(ticker.value));
+      //let query = JSON.parse(JSON.stringify(ticker.value));
+      let query = { ...ticker.value };
       query.from = formatDate(new Date(query.from));
-      query.to = formatDate(new Date(query.to) + 1);
+      query.to = formatDate(new Date(query.to));
 
       const [historicalRes, metricsRes, insiderTradesRes] = await Promise.allSettled([
         getHistoricalPrice(query.symbol, query.from, query.to, 'W'),
@@ -134,24 +137,38 @@
         getInsiderTrades(query.symbol, query.from, query.to)
       ]);
 
+      var diffs = [];
+      var dates = [];
+      var percentages = [];
       if (historicalRes.status === 'fulfilled') {
-        data.value = historicalRes.value.data
-        const diffs = data.value.map(item => item.diff);
-        const dates = data.value.map(item => item.Date);
-        const percentages = data.value.map(item => item.percentage);
+        data.value = historicalRes.value.data;
+        diffs = data.value.map(item => item.diff);
+        dates = data.value.map(item => item.Date);
+        percentages = data.value.map(item => item.percentage);
+      } else {
+        data.value = undefined;
+        histChart.value = { title: '', data: [] };
+        donutChart.value = { title: '', data: [] };
+        lineChart.value = { title: '', data: [] };
+        pieChart.value = { title: '', data: [] };
+        console.log("Failed to fetch historical prices:", histChart.value);
+        //console.error("Failed to fetch historical prices:", historicalRes.reason);
+      }
 
+      if (diffs.length > 0) {
         histChart.value.title = "Price Movement Histogram";
         histChart.value.data = diffs;
         donutChart.value.title = "Sentimental Donut";
         donutChart.value.data = diffs;
-        lineChart.value.title = "Percentage Change in Price";
-        lineChart.value.data = [dates.reverse(), percentages.reverse()];
         pieChart.value.title = "Longest Streaks"
         pieChart.value.data = diffs;
-      } else {
-        data.value = [];
-        //console.error("Failed to fetch historical prices:", historicalRes.reason);
       }
+      if (dates.length > 0 && percentages.length > 0) {
+        lineChart.value.title = "Percentage Change in Price";
+        lineChart.value.data = [dates.reverse(), percentages.reverse()];
+        console.log("LineChart: ", lineChart.value.data);
+      }
+
 
       if (metricsRes.status === 'fulfilled') {
        stats.value.data = metricsRes.value.data;
@@ -163,13 +180,11 @@
       if (insiderTradesRes.status === 'fulfilled') {
         insidertradesData.value = insiderTradesRes.value.data;
       } else {
-        insidertradesData.value = [];
+        insidertradesData.value = undefined;
         //console.error("Failed to fetch insider trades:", insiderTradesRes.reason);
       }
 
-      if (historicalRes.status == 'rejected' || 
-          metricsRes.status == 'rejected' || 
-          insiderTradesRes.status == 'rejected') {
+      if (historicalRes.status == 'rejected' || metricsRes.status == 'rejected' || insiderTradesRes.status == 'rejected') {
         showError.value = true;
         if (historicalRes.status == 'rejected' && historicalRes.reason && historicalRes.reason.response) {
           if (historicalRes.reason.response.data && historicalRes.reason.response.data.detail) {
@@ -184,11 +199,12 @@
             errMsg.value = "Failed to fetch metrics.";
           }
         } else if (insiderTradesRes.status == 'rejected' && insiderTradesRes.reason && insiderTradesRes.reason.response) {
-          if (insiderTradesRes.reason.response.data && insiderTradesRes.reason.response.data.detail) {
-            errMsg.value = insiderTradesRes.reason.response.data.detail;
-          } else {
-            errMsg.value = "Failed to fetch insider trades.";
-          }
+          showError.value = false;
+          // if (insiderTradesRes.reason.response.data && insiderTradesRes.reason.response.data.detail) {
+          //   errMsg.value = insiderTradesRes.reason.response.data.detail;
+          // } else {
+          //   errMsg.value = "Failed to fetch insider trades.";
+          // }
         } else {
           errMsg.value = "An error occurred while fetching data.";
         }

@@ -15,8 +15,13 @@
   });
 
   watch(props, (newValue, oldValue) => {
-    chartData.value = setChartData(props.data[0], props.data[1]);
-    chartOptions.value = setChartOptions();
+    if (props.data.length > 0) {
+      chartData.value = setChartData(props.data[0], props.data[1]);
+      chartOptions.value = setChartOptions();
+    } else {
+      chartData.value = null;
+      chartOptions.value = null;
+    }
   })
 
   const setChartData = (x, y) => {

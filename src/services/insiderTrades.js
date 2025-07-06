@@ -47,7 +47,6 @@ insidertrades.interceptors.request.use(
     // Attach CSRF token only for refresh endpoint
     if (config.url && config.url.includes('/auth/refresh')) {
       const csrfToken = getCookie('csrf_token');
-      console.log(csrfToken);
       if (csrfToken) {
         config.headers['X-CSRF-TOKEN'] = csrfToken;
       }

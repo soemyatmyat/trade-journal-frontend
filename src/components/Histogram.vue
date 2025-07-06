@@ -16,9 +16,13 @@
   });
 
   watch(props, (newValue, oldValue) => {
-    chartData.value = setChartData(props.data);
-    chartOptions.value = setChartOptions();
-
+    if (props.data.length > 0) {
+      chartData.value = setChartData(props.data);
+      chartOptions.value = setChartOptions();
+    } else {
+      chartData.value = null,
+      chartOptions.value = null;
+    }
   })
 
   const setChartData = (diffs) => {
@@ -27,15 +31,15 @@
       return ele > 0 ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)'; 
     });
     return {
-        labels: binEdges,
-        datasets: [
-            {
-                label: 'Bin width of ' + binWidth,
-                data: frequency,
-                backgroundColor: bgColor, // red for - values, blue for + values
-                borderWidth: 1,
-            }
-        ]
+      labels: binEdges,
+      datasets: [
+        {
+          label: 'Bin width of ' + binWidth,
+          data: frequency,
+          backgroundColor: bgColor, // red for - values, blue for + values
+          borderWidth: 1,
+        }
+      ]
     };
   };
 
