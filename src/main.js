@@ -9,12 +9,14 @@ import 'primeflex/primeflex.css';
 import PrimeVue from 'primevue/config';
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
+import ProgressSpinner from 'primevue/progressspinner';
 
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(PrimeVue, { ripple: true })
 app.use(ToastService);
+app.component('ProgressSpinner',ProgressSpinner);
 app.component('Toast', Toast);
 app.mount('#app')
 

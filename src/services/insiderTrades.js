@@ -14,6 +14,8 @@ const insidertrades = axios.create({
   baseURL: import.meta.env.VITE_INSIDER_TRADES_API,
   crossDomain: true,
   withCredentials: true,
+  xsrfCookieName: "csrf_token",
+  xsrfHeaderName: "X-CSRF-TOKEN"
 });
 
 // Pinia store to manage authentication state
@@ -45,8 +47,9 @@ insidertrades.interceptors.request.use(
     // Attach CSRF token only for refresh endpoint
     if (config.url && config.url.includes('/auth/refresh')) {
       const csrfToken = getCookie('csrf_token');
+      console.log(csrfToken);
       if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken;
+        config.headers['X-CSRF-TOKEN'] = csrfToken;
       }
     }
 
