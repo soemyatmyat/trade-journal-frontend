@@ -148,10 +148,9 @@
   import { getTicker, getOption } from '@/services/api'; 
   import { accessIndexedDB } from '@/services/indexedDb';
   import { FilterMatchMode } from 'primevue/api';
-  import { formatDate, fetchFakeTrades } from '@/services/util';
+  import { formatDateToUTC, fetchFakeTrades } from '@/services/util';
   import { columns } from '@/components/Columns.js';
   import Logout from '@/components/Logout.vue'
-
 
   const accessIndexedDb = accessIndexedDB('trades-journal', [['tickers', 'ticker'], ['options', 'option_id']]);
   const showAddError = ref(false);
@@ -218,7 +217,9 @@
     }
   }
 
+  // fetch current price for stock ticker
   const fetchTickerData = async (tradeElement) => {
+    
     const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.ticker, "tickers");
     if (existing == undefined) {
       const response = await getTicker(tradeElement.ticker);
@@ -303,9 +304,9 @@
 
   const fetchTrades = async () => {
     try {
-      const response = await getPositions();
-      const tradesData = response.data;
-      const fetchTickerPromises = tradesData.map(processTradeElement);
+      const response = await getPositions(); // call backend API and retrieve the position // todo: should I cache it?
+      const tradesData = response.data; // array of trade objects
+      const fetchTickerPromises = tradesData.map(processTradeElement); // array of promises
       const resolvedTrades = await Promise.all(fetchTickerPromises);
 
       return tradesData;
@@ -363,9 +364,9 @@
 
     // Format date fields if necessary
     if (addTradeObject.close_date !== undefined) {
-      addTradeObject.close_date = formatDate(addTradeObject.close_date);
+      addTradeObject.close_date = formatDateToUTC(addTradeObject.close_date);
     }
-    addTradeObject.open_date = formatDate(addTradeObject.open_date);
+    addTradeObject.open_date = formatDateToUTC(addTradeObject.open_date);
     // console.log("Newww: ", addTradeObject);
     //trades.value.push(addTrade);
 
@@ -387,7 +388,7 @@
       let { data, newValue, field } = event;
       if (data[field] != newValue) { // only if it's a new value 
         if (field == 'open_date' || field == 'close_date') {
-          data[field] = formatDate(newValue);
+          data[field] = formatDateToUTC(newValue);
         } else {
           // recompute cost, net liquid and profit/loss for qty and trade price change
           data[field] = newValue;

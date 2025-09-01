@@ -37,7 +37,7 @@
 <script setup>
   import GuestPass from '@/components/GuestPass.vue'
   import { ref } from 'vue';
-  import login from '@/services/authapi';
+  import { login } from '@/services/api';
   import { useRouter } from 'vue-router';
   const username = ref('');
   const password = ref('');
@@ -49,7 +49,7 @@
     try {
       const token = await login(payload);
       // localStorage.setItem('token', token);
-      sessionStorage.setItem("token", token);
+      //sessionStorage.setItem("token", token);
       router.push('/home');
     } catch (error) {
       // axois error: most likely authentication error  
@@ -66,12 +66,12 @@
     }
   }
 
-  const handleLoginSubmit = () => {
+  const handleLoginSubmit = async () => {
     const params = new URLSearchParams();
     params.append('username', username.value);
     params.append('password', password.value);
     //showError.value = true;
-    callAuthenticationService(params);
+    await callAuthenticationService(params);
   };
 
   const redirectAnalysisPage = () => {

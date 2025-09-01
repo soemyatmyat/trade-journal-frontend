@@ -32,12 +32,12 @@ export const accessIndexedDB = (indexedDbName, objectStores) => {
       let transaction = db.transaction([objectStoreName], 'readwrite');
       let objectStore = transaction.objectStore(objectStoreName);
 
-      let request = objectStore.add(payload);
+      let request = objectStore.put(payload); // to handle the case of updating existing entry
       request.onsuccess = (event) => {
-        console.log('Data addded successfully to IndexedDb.');
+        //console.log('Data addded successfully to IndexedDb.');
       }
       request.onerror = (event) => {
-        console.log('Error adding data: ' + event.target.error)
+        console.error('Error adding data: ' + event.target.error)
       }
 
     } catch (error) {
@@ -51,13 +51,16 @@ export const accessIndexedDB = (indexedDbName, objectStores) => {
     let db;
     try {
       db = await openIndexedDB();
-      const transaction = db.transaction([objectStoreName], 'readonly');
-      const objectStore = transaction.objectStore(objectStoreName);
-      const request = objectStore.get(id);
+      const transaction = db.transaction([objectStoreName], 'readonly'); // readonly transaction
+      const objectStore = transaction.objectStore(objectStoreName); // access the object store
+      const request = objectStore.get(id); // which item to get
 
       return new Promise((resolve, reject) => {
         request.onsuccess = (event) => {
           const data = event.target.result;
+          if (data != undefined && data.fetched_date !== new Date().toISOString().split('T')[0]) { // time in UTC
+            return resolve(undefined); // if data is not from today, return undefined to fetch new data
+          }
           resolve(data);
         };
 
@@ -88,7 +91,7 @@ export const accessIndexedDB = (indexedDbName, objectStores) => {
       };
 
       request.onerror = (event) => {
-        console.log('Error getting data: ' + event.target.errorCode);
+        console.error('Error getting data: ' + event.target.errorCode);
         reject('Error retrieving data: ' + event.target.error);
       }
       

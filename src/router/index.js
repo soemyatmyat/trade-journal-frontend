@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/services/auth'
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import AnalysisView from '../views/AnalysisView.vue'
 import TestView from '../views/TestView.vue'
-// import HomeBar from '../views/HomeBar.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,18 +11,18 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      component: LoginView
+      component: LoginView // Render Login
     },
     {
       path: '/home',
       name: 'home',
-      component: HomeView, // check if token still valid
+      component: HomeView, 
       meta: { requiresAuth: true } 
     },
     {
       path: '/analyze',
       name: 'analysis',
-      component: AnalysisView, // check if token still valid
+      component: AnalysisView, // check if token is still valid and render ui
     },
     {
       path: '/test',
@@ -43,8 +43,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Check if the route requires authentication
   if (to.meta.requiresAuth) {
+    const auth = useAuthStore();
     // Check if the user is authenticated
-    if (!isAuthenticated()) {
+    if (!auth.isAuthenticated) {
       // Redirect to login page if not authenticated
       next({ name: 'login' });
     } else {
@@ -57,10 +58,10 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-function isAuthenticated() {
-  // Implement logic to check if the user is authenticated
-  // For example, check if there is a valid authentication token
-  return sessionStorage.getItem('token') !== null;
-}
+// function isAuthenticated() {
+//   // Implement logic to check if the user is authenticated
+//   // For example, check if there is a valid authentication token
+//   return sessionStorage.getItem('token') !== null;
+// }
 
 export default router

@@ -17,7 +17,7 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [X] Include .env 
 
 ## Iteration 0.2
-- [ ] Revisit indexed Data for updates (for options: check expiry date before calling backend APIs)
+- [X] Revisit indexed Data for updates (for options: check expiry date before calling backend APIs)
 - [ ] Show, hide closed/past positions
 - [ ] Portfolio Dashboard (position analysis: understand your holdings)
 - [ ] Historical Stock Price Dashboard (stock analysis: observe price volatility and identify the price patterns for your next move!)
@@ -36,6 +36,10 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [ ] Revisit the codes and look for component abstraction implementation (vue specific)
 - [X] Integrate with open-insider-trades for SEC Form 4 insider trading data
   - [X] Add methods to get a new token with the refresh_token in httpOnly Cookie and csrf_token 
+
+## Iteration 0.4
+- [X] Update Indexed Data for caching the ticker information (we only query once a day for the ticker's current price, and only if necessary)
+- [X] Added refresh token authentication with backend  
 
 ## Credits 
 - Ready-made Components: [PrimeVue](https://primevue.org/)

@@ -82,7 +82,7 @@
   import { ref } from 'vue';
   import { getHistoricalPrice, getMetrics } from '@/services/api';
   import { stock_columns, insider_trades_columns } from '@/components/Columns.js';
-  import { formatDate, getHistogramValues } from '@/services/util';
+  import { formatDateToUTC, getHistogramValues } from '@/services/util';
   import { getInsiderTrades } from '@/services/insiderTrades';
 
   const isLoading = ref(false);
@@ -92,8 +92,8 @@
   const insidertradesData = ref();
   const ticker = ref({
     symbol: 'AAPL',
-    from: formatDate(new Date('2024-01-01')), 
-    to: formatDate(new Date(Date.now())),
+    from: formatDateToUTC(new Date('2024-01-01')), 
+    to: formatDateToUTC(new Date(Date.now())),
     frequency: 'Weekly'
   })
 
@@ -128,8 +128,8 @@
       showError.value = false;
       //let query = JSON.parse(JSON.stringify(ticker.value));
       let query = { ...ticker.value };
-      query.from = formatDate(new Date(query.from));
-      query.to = formatDate(new Date(query.to));
+      query.from = formatDateToUTC(new Date(query.from));
+      query.to = formatDateToUTC(new Date(query.to));
 
       const [historicalRes, metricsRes, insiderTradesRes] = await Promise.allSettled([
         getHistoricalPrice(query.symbol, query.from, query.to, 'W'),
@@ -151,7 +151,7 @@
         donutChart.value = { title: '', data: [] };
         lineChart.value = { title: '', data: [] };
         pieChart.value = { title: '', data: [] };
-        console.log("Failed to fetch historical prices:", histChart.value);
+        //console.log("Failed to fetch historical prices:", histChart.value);
         //console.error("Failed to fetch historical prices:", historicalRes.reason);
       }
 
@@ -166,7 +166,7 @@
       if (dates.length > 0 && percentages.length > 0) {
         lineChart.value.title = "Percentage Change in Price";
         lineChart.value.data = [dates.reverse(), percentages.reverse()];
-        console.log("LineChart: ", lineChart.value.data);
+        //console.log("LineChart: ", lineChart.value.data);
       }
 
 
