@@ -47,9 +47,8 @@
 
   const callAuthenticationService = async (payload) => {
     try {
+      console.log("calling authentication service");
       const token = await login(payload);
-      // localStorage.setItem('token', token);
-      //sessionStorage.setItem("token", token);
       router.push('/home');
     } catch (error) {
       // axois error: most likely authentication error  

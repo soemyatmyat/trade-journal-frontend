@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from './auth';
 import jwtDecode from 'jwt-decode';
+import router from '@/router'
 
 // Helper to get cookie value by name
 function getCookie(name) {
@@ -21,31 +22,54 @@ const api = axios.create({
 // use interceptors to globally intercept and modify requests or responses 
 // before they are handled by the .then() or .catch() methods of the promise. 
 api.interceptors.request.use(async (config) => {
-    const auth = useAuthStore(); 
+  const auth = useAuthStore()
+  // console.log('Request URL:', config.url);
+  // CSRF token for refresh only
+  if (config.url?.includes('/auth/refresh')) {
+    const csrfToken = getCookie('csrf_token')
+    if (csrfToken) config.headers['X-CSRF-TOKEN'] = csrfToken
+    return config
+  }
 
-    // Attach CSRF token only for refresh endpoint
-    if (config.url && config.url.includes('/auth/refresh')) {
-      const csrfToken = getCookie('csrf_token');
-      if (csrfToken) {
-        config.headers['X-CSRF-TOKEN'] = csrfToken;
-      }
-      return config;
-    }
+  // skip these endpoints for checking access token
+  const skipEndpoints = [
+    '/auth/token',
+    '/tickers/historical_prices/',
+    '/tickers/metrics/'
+  ];
+  
+  // If the callback returns true for any element, .some() immediately returns true.
+  if (skipEndpoints.some(endpoint => config.url?.startsWith(endpoint))) {
+    // console.log(`Skipping auth check for ${config.url}`);
+    return config
+  }
 
-    // if access token exists and not expired, attach it to Authorization header otherwise try to refresh
-    if (auth.accessToken) {
+  // // Allow login request without token
+  // if (config.url?.includes('/auth/token')) {
+  //   return config
+  // }
+
+  // For other requests, check access token and self-heal if expired
+  if (auth.accessToken) {
+    try {
       const { exp } = jwtDecode(auth.accessToken)
       if (Date.now() >= exp * 1000) {
-        // try to refresh
-        await refreshToken();
+        await refreshToken()
       }
-      config.headers.Authorization = `Bearer ${auth.accessToken}`;
+      config.headers.Authorization = `Bearer ${auth.accessToken}`
+    } catch (err) {
+      console.error('Error decoding or refreshing token:', err)
+      auth.logout()
+      router.push({ name: 'login' })
+      return Promise.reject(err)
     }
-    return config;
-  
-  },
-  (error) => Promise.reject(error)
-);
+  } else {
+    auth.logout()
+    router.push({ name: 'login' })
+    return Promise.reject(new Error('No access token'))
+  }
+  return config
+}, (error) => Promise.reject(error))
 
 // Response interceptor to handle 401 and token refresh
 api.interceptors.response.use(
@@ -80,7 +104,8 @@ api.interceptors.response.use(
   }
 );
 
-const refreshToken = async () => {
+// Refresh token function
+export const refreshToken = async () => {
   try {
     const response = await api.post('/auth/refresh', null, {
       withCredentials: true,
@@ -91,9 +116,10 @@ const refreshToken = async () => {
     return access_token;
   } catch (err) {
     const auth = useAuthStore();
-    auth.clearToken();
+    auth.logout();
     console.error('Login failed:', err.response?.data || err.message);
-    throw err;
+    // throw err;
+    return null;
   }
 };
 
@@ -143,6 +169,7 @@ export const getOption = (optionData) => {
   return api.post('/tickers/options/', optionData)
 }
 
+// READ == HISTORICAL PRICES for a ticker
 export const getHistoricalPrice = (ticker_id, from_date, to_date, frequency) => {
   const params = {
     from_date: from_date,
@@ -154,6 +181,7 @@ export const getHistoricalPrice = (ticker_id, from_date, to_date, frequency) => 
   return api.get(`/tickers/historical_prices/${ticker_id}`, { params: params });
 }
 
+// READ == METRICS for a ticker
 export const getMetrics = (ticker_id) => {
   return api.get(`/tickers/metrics/${ticker_id}`);
 }

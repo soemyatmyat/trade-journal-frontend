@@ -1,14 +1,14 @@
 ## Description 
 Trade journal for recording trading activites. It has never been easy to track your trading activites. 
 
-## Iteration 0
+## Iteration 0 [X]
 - [X] Authentication calls (user and token) and setup Authorization
 - [X] Generate Fake data for testing
 - [X] Restful CRUD calls (positions, tickers)
 - [X] Compute trades metrics on the fly 
 - [X] Indexing data (for instance, tickers info) to minimize API calls to backend 
   
-## Iteration 0.1
+## Iteration 0.1 [X]
 - [X] Login Form UI + Error Handlings + Guest Pass
 - [X] Home Page UI to display trading positions 
 - [X] Dialog to add a new trading position 
@@ -16,7 +16,7 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [X] Logout mechanism 
 - [X] Include .env 
 
-## Iteration 0.2
+## Iteration 0.2 
 - [X] Revisit indexed Data for updates (for options: check expiry date before calling backend APIs)
 - [ ] Show, hide closed/past positions
 - [ ] Portfolio Dashboard (position analysis: understand your holdings)
@@ -28,7 +28,6 @@ Trade journal for recording trading activites. It has never been easy to track y
   - [X] Sentimental Donut 
   - [X] Added Stock Metrics
   - [X] Usability: detect enter key for the dashboard
-  - [X] Earnings vs. Expectations
 - [X] Date confusion: https://www.fullstackfoundations.com/blog/javascript-dates
   - [X] Javascript new date must be converted to UTC as it functions differently depending on whether new date is generated from the server or from the browser. 
 
@@ -38,10 +37,20 @@ Trade journal for recording trading activites. It has never been easy to track y
 - [X] Integrate with open-insider-trades for SEC Form 4 insider trading data
   - [X] Add methods to get a new token with the refresh_token in httpOnly Cookie and csrf_token 
 
-## Iteration 0.4
+## Iteration 0.4 [X]
 - [X] Update Indexed Data for caching the ticker information (we only query once a day for the ticker's current price, and only if necessary)
 - [X] Add Refresh token authentication with backend  
-- [X] Add Rehydration
+- [X] Add Rehydration flow for reloading pages, that is, if the access token has expired or lost, use the refresh token to get the access token
+
+## Iteration 0.5 
+- [X] Add a new chart to illustrate Earnings vs. Expectations
+- [X] Fixed timezone 
+- [ ] Revisit the codes and look for component abstraction implementation (vue specific)
+- [ ] Historical Stock Price Dashboard (stock analysis: observe price volatility and identify the price patterns for your next move!)
+  - [X] Historical Price table 
+    - [ ] Export to CSV 
+  - [X] Insider trades table 
+    - [ ] Export to CSV 
 
 ## Credits 
 - Ready-made Components: [PrimeVue](https://primevue.org/)

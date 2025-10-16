@@ -54,10 +54,11 @@ export const accessIndexedDB = (indexedDbName, objectStores) => {
       const transaction = db.transaction([objectStoreName], 'readonly'); // readonly transaction
       const objectStore = transaction.objectStore(objectStoreName); // access the object store
       const request = objectStore.get(id); // which item to get
-
       return new Promise((resolve, reject) => {
         request.onsuccess = (event) => {
           const data = event.target.result;
+          // todo: this is creating a date object in browser time and then converting to UTC string
+          // todo: also, close end date can only be weekday - need to handle that
           if (data != undefined && data.fetched_date !== new Date().toISOString().split('T')[0]) { // time in UTC
             return resolve(undefined); // if data is not from today, return undefined to fetch new data
           }

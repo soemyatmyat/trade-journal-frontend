@@ -8,13 +8,17 @@ export const useAuthStore = defineStore('auth', {
     accessToken: null
   }),
   getters: {
+    // check if there is a token and if it's still valid. If expired, return false
     isAuthenticated: (state) => {
       if (!state.accessToken) return false
+    },
+    isExpired: (state) => {
+      if (!state.accessToken) return true
       try {
         const { exp } = jwtDecode(state.accessToken)
-        return Date.now() < exp * 1000
+        return Date.now() >= exp * 1000
       } catch {
-        return false
+        return true
       }
     }
   },
@@ -40,3 +44,4 @@ export const useAuthStore = defineStore('auth', {
     },
   }
 });
+

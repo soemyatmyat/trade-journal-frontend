@@ -24,73 +24,73 @@
       paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading" :size="'small'"
       :globalFilterFields="['category', 'open_date', 'close_date', 'ticker', 'qty', 'trade_price', 'closed_price', 'remark']">
       
-      <!-- table headers -->
-      <template #header>
-        <div> <!---class="flex justify-content-end"> Global Keyword Search -->
-          <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
-        </div>
-      </template>
-      <template #empty> No trades found. </template>
-      <template #loading> Loading data. Please wait. </template>
-
-      <!-- START:: table content -->
-      <Column 
-        v-for="col of columns" style="min-width: 8rem" sortable 
-          :key="col.field" 
-          :field="col.field" 
-          :header="col.header" 
-          :editable="col.editable"
-          :showFilterMenu="col.editable ? true : false">
-        <!-- data -->
-        <template #body="{ data }">
-          {{ typeof data[col.field] === 'number' ? data[col.field].toLocaleString('en-US', { minimumFractionDigits: 2 }) : data[col.field] }}
-        </template>        
-        <!-- filter -->
-        <template #filter="{ filterModel, filterCallback }">
-          <template v-if="col.editable">
-            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" class="p-column-filter" />
-          </template>
+        <!-- table headers -->
+        <template #header>
+          <div> <!---class="flex justify-content-end"> Global Keyword Search -->
+            <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+          </div>
         </template>
-        <!-- edit -->
-        <template #editor="{ data, field }">
-          <template v-if="col.editable"> <!-- only editable columns -->
-            <!-- category -->
-            <template v-if="col.options"> 
-              <Dropdown v-model="data[field]" :options="col.options" autofocus />
+        <template #empty> No trades found. </template>
+        <template #loading> Loading data. Please wait. </template>
+
+        <!-- START:: table content -->
+        <Column 
+          v-for="col of columns" style="min-width: 8rem" sortable 
+            :key="col.field" 
+            :field="col.field" 
+            :header="col.header" 
+            :editable="col.editable"
+            :showFilterMenu="col.editable ? true : false">
+          <!-- data -->
+          <template #body="{ data }">
+            {{ typeof data[col.field] === 'number' ? data[col.field].toLocaleString('en-US', { minimumFractionDigits: 2 }) : data[col.field] }}
+          </template>        
+          <!-- filter -->
+          <template #filter="{ filterModel, filterCallback }">
+            <template v-if="col.filterable">
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" class="p-column-filter" />
             </template>
-            <!-- numbers check, qty, trade_price, option -->
-            <template v-else-if="col.type === 'float'"> 
-              <InputNumber v-model="data[field]" :minFractionDigits="2" autofocus />
+          </template>
+          <!-- edit -->
+          <template #editor="{ data, field }">
+            <template v-if="col.editable"> <!-- only editable columns -->
+              <!-- category -->
+              <template v-if="col.options"> 
+                <Dropdown v-model="data[field]" :options="col.options" autofocus />
+              </template>
+              <!-- numbers check, qty, trade_price, option -->
+              <template v-else-if="col.type === 'float'"> 
+                <InputNumber v-model="data[field]" :minFractionDigits="2" autofocus />
+              </template>
+              <!-- date check -->
+              <template v-else-if="col.type === 'datepicker'"> 
+                <Calendar v-model="data[field]" :inputStyle="{'width': '100%'}" :readonlyInput="false" autofocus />
+              </template>     
+              <!-- remark -->     
+              <template v-else>
+                <InputText v-model="data[field]" autofocus />
+              </template>
             </template>
-            <!-- date check -->
-            <template v-else-if="col.type === 'datepicker'"> 
-              <Calendar v-model="data[field]" :inputStyle="{'width': '100%'}" :readonlyInput="false" autofocus />
-            </template>     
-            <!-- remark -->     
             <template v-else>
-              <InputText v-model="data[field]" autofocus />
+              {{ data[field] }}
             </template>
           </template>
-          <template v-else>
-            {{ data[field] }}
+        </Column>
+        <Column :exportable="false" style="min-width:8rem">
+          <template #body="slotProps">
+              <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)" />
           </template>
-        </template>
-      </Column>
-      <Column :exportable="false" style="min-width:8rem">
-        <template #body="slotProps">
-            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)" />
-        </template>
-      </Column>
-      <!-- END:: table content -->
-
-      <template #footer>
-          <p class="m-0">
-            <b>Total Cost: </b>{{ totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} <br>
-            <b>Total Net Liquidity: </b>{{ totalNetLiquid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} <br>
-            <b>Total Profit/Loss: </b>{{ totalProfitLoss.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} <br>
-          </p>
-
-      </template>
+        </Column>
+        <ColumnGroup type="footer">
+          <Row>
+            <Column footer="Totals:" :colspan="9" />
+            <Column :footer="totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 , maximumFractionDigits: 2 })" /> 
+            <Column :footer="totalNetLiquid.toLocaleString('en-US', { maximumFractionDigits: 2 })" />
+            <Column :footer="totalProfitLoss.toLocaleString('en-US', { maximumFractionDigits: 2 })" />
+            <Column :footer="''" />
+          </Row>
+        </ColumnGroup>
+        <!-- END:: table content -->
       </DataTable>
     </div>
   </div>
@@ -217,12 +217,11 @@
     }
   }
 
-  // fetch current price for stock ticker
+  // 3. fetch current price for stock ticker
   const fetchTickerData = async (tradeElement) => {
-    
-    const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.ticker, "tickers");
+    const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.ticker.toLowerCase(), "tickers");
     if (existing == undefined) {
-      const response = await getTicker(tradeElement.ticker);
+      const response = await getTicker(tradeElement.ticker.toLowerCase());
       accessIndexedDb.storeData(response.data, "tickers"); 
       tradeElement.currentPrice = response.data.closed_price;
     } else {
@@ -231,20 +230,21 @@
     return tradeElement;
   };
 
+  // 4. fetch current price for option ticker
   const fetchOptionData = async (tradeElement) => {
     tradeElement.type = tradeElement.category;
     tradeElement.expire_date = tradeElement.close_date;
     tradeElement.strike_price = tradeElement.trade_price;
     tradeElement.option_id = tradeElement.ticker + tradeElement.type + tradeElement.close_date + tradeElement.trade_price;
-    const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.option_id, "options");
+    const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.option_id.toLowerCase(), "options");
     if (existing == undefined) {
       // check the expiry date: if expiry date is past today, update its closed_price
       const response = await getOption(tradeElement);
-      response.data.option_id = tradeElement.option_id;
+      response.data.option_id = tradeElement.option_id.toLowerCase();
       accessIndexedDb.storeData(response.data, "options");
-      tradeElement.currentPrice = response.data.ask;
+      tradeElement.currentPrice = response.data.ask; 
     } else {
-      tradeElement.currentPrice = existing.ask;
+      tradeElement.currentPrice = existing.ask; // ask because we are selling the option
     }
     return tradeElement;
   };
@@ -280,6 +280,7 @@
     return tradeElement;
   }
 
+  // 2. process each trade element
   const processTradeElement = async (tradeElement) => {
     if (tradeElement.closed_price == null) { // UNREALIZED GAIN-LOSS
       if (tradeElement.category === 'Long' || tradeElement.category === 'Short') {
@@ -298,10 +299,14 @@
     }
     totalCost += tradeElement.cost; 
     totalNetLiquid += tradeElement.netLiquid;
-    totalProfitLoss += tradeElement.totalProfitLoss;
+    totalProfitLoss += tradeElement.profitLoss;
+    console.log("totalCost: ", totalCost);
+    console.log("totalNetLiquid: ", totalNetLiquid);
+    console.log("TotalProfitLoss: ", totalProfitLoss);
     return tradeElement;
   };
 
+  // 1. fetching all trades
   const fetchTrades = async () => {
     try {
       const response = await getPositions(); // call backend API and retrieve the position // todo: should I cache it?

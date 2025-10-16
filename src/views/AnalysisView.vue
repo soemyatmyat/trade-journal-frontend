@@ -57,10 +57,11 @@
         <div class="col-12" > <!-- Percentage Change in Price -->
           <LineChart :title="lineChart.title" :data="lineChart.data" />
         </div>
+        <div class="col-6"> <!-- Earnings vs. Expectations Dual Axis -->
+          <DualAxis :title="dualAxisChart.title" :data="dualAxisChart.data" />
+        </div>
         <div class="col-6"> <!-- Longest Streaks Pie -->
           <Pie :title="pieChart.title" :data="pieChart.data" />
-        </div>
-        <div class="col-6">
         </div>
       </div>
     </div>
@@ -122,12 +123,17 @@
     data: [],
   })
 
+  const dualAxisChart = ref({
+    title: '',
+    data: [],
+  })
+
   const retrieveData = async () => {    
     try {
       isLoading.value = true;
       showError.value = false;
       //let query = JSON.parse(JSON.stringify(ticker.value));
-      let query = { ...ticker.value };
+      let query = { ...ticker.value }; // Shallow copy
       query.from = formatDateToUTC(new Date(query.from));
       query.to = formatDateToUTC(new Date(query.to));
 
@@ -169,9 +175,23 @@
         //console.log("LineChart: ", lineChart.value.data);
       }
 
-
+      var earningsHistory = [];
+      var earningsHistoryDates = [];
+      var earningsHistorySurprise = [];
+      var earningsHistoryEPSEstimate = [];
+      var earningsHistoryReportedEPS = [];
       if (metricsRes.status === 'fulfilled') {
-       stats.value.data = metricsRes.value.data;
+        stats.value.data = metricsRes.value.data;
+        earningsHistory = metricsRes.value.data.earningsHistory || []; // 2020-01-28T21:00:00+00:00
+        earningsHistory = earningsHistory.slice(0, 12); // keep only the most recent 8 entries
+        earningsHistoryDates = earningsHistory.map(item => item['Earnings Date'].split('T')[0]); // only keep date part
+        // todo: get the index for the date range defined by query.from and query.to, and slice the arrays accordingly
+        earningsHistorySurprise = earningsHistory.map(item => item['Surprise(%)']);
+        earningsHistoryEPSEstimate = earningsHistory.map(item => item['EPS Estimate']);
+        earningsHistoryReportedEPS = earningsHistory.map(item => item['Reported EPS']);
+        dualAxisChart.value.title = "Earnings vs. Expectations";
+        dualAxisChart.value.data = [earningsHistoryDates.reverse(), earningsHistoryEPSEstimate.reverse(), earningsHistoryReportedEPS.reverse(), earningsHistorySurprise.reverse()];
+        //console.log(dualAxisChart.value.data);
       } else {
         stats.value.data = [];
         //console.error("Failed to fetch metrics:", metricsRes.reason);

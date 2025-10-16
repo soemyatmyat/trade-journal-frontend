@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/services/auth'
+import { useAuthStore } from '@/services/auth';
+import { refreshToken } from '@/services/api';
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import AnalysisView from '../views/AnalysisView.vue'
@@ -40,14 +41,18 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // Check if the route requires authentication
   if (to.meta.requiresAuth) {
     const auth = useAuthStore();
-    // Check if the user is authenticated
-    if (!auth.isAuthenticated) {
-      // Redirect to login page if not authenticated
-      next({ name: 'login' });
+    // Check if there is a token and valid
+    if (!auth.accessToken) {
+      // Check if there is a refresh token and try to refresh
+      await refreshToken().catch(() => {
+        next({ name: 'login' });
+      }
+      );
+      next();
     } else {
       // Continue to the protected route
       next();

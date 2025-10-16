@@ -28,17 +28,37 @@
       .trim(); // Trim any extra spaces
   };
 
-  // Create a computed property for formatted metrics
-  const formattedMetrics = computed(() => {
-    // Get the keys of the metrics object
-    const keys = Object.keys(props.metrics);
+  // Helper: convert ISO string to local date
+  const formatDate = (value) => {
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+      const date = new Date(value);
+      //return date.toLocaleDateString(); // returns date only in user's timezone
+      return date.toLocaleDateString("en-CA"); // returns date only in user's timezone in "en-CA" (Canada English) uses ISO-like YYYY-MM-DD format // need to revisit this //todo
+    }
+    return value;
+  };
 
-    // Create a new object, omitting the first entry
-    return keys.slice(1).reduce((acc, key) => {
-      acc[formatLabel(key)] = props.metrics[key];
+  const keysToSkip = new Set(["symbol", "earningsHistory"]);
+
+  const formattedMetrics = computed(() => {
+    return Object.entries(props.metrics).reduce((acc, [key, value]) => {
+      if (keysToSkip.has(key)) return acc;
+      acc[formatLabel(key)] = formatDate(value); // format ISO dates
       return acc;
     }, {});
   });
+
+  // // Create a computed property for formatted metrics
+  // const formattedMetrics = computed(() => {
+  //   // Get the keys of the metrics object
+  //   const keys = Object.keys(props.metrics);
+
+  //   // Create a new object, omitting the first entry and the last entry
+  //   return keys.slice(0, -1).reduce((acc, key) => {
+  //     acc[formatLabel(key)] = props.metrics[key];
+  //     return acc;
+  //   }, {});
+  // });
 
 
 </script>
