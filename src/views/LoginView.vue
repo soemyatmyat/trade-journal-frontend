@@ -1,7 +1,7 @@
 <template>
-  <div class="grid">
+  <div class="grid"> 
     <div class="col-4 col-offset-4">
-      <div class="col-12">
+      <div class="col-12"> 
         <div class="col-4 col-offset-4">
         <Image src="/brand-logo.png" alt="trade-journal-logo" width="150" />
         </div>
@@ -17,11 +17,11 @@
         <div class="field col-12">
           <Button @click="handleLoginSubmit" label="Sign In" class="w-full" />
         </div>
-        <div class="field col-12">
+        <div class="field col-12"> 
           <GuestPass />
         </div>
         <div class="field col-12">
-          Note: Apologies for the delay in experience with API request processing. Backend is hosted on free server instance which spins down with inactivity. 
+          Note: This is a work-in-progress project. Apologies if you experience any delays with API request processing. 
         </div>
         <div class="field col-12">
           Also, check out <a href="#" @click="redirectAnalysisPage">historical stock price analysis dashboard</a> to observe price volatility and identify the price patterns for your next move!
@@ -30,7 +30,6 @@
           <InlineMessage v-if="showError" severity="error">{{errMsg}} :(</InlineMessage>
         </div>
     </div>
-
   </div>
 </template>
 
@@ -41,13 +40,13 @@
   import { useRouter } from 'vue-router';
   const username = ref('');
   const password = ref('');
-  const router = useRouter();
-  const showError = ref(false);
+  const router = useRouter(); // for home redirect, for analysis page redirect
+  const showError = ref(false); 
   const errMsg = ref('Error logging in. Please try again later.');
 
   const callAuthenticationService = async (payload) => {
     try {
-      console.log("calling authentication service");
+      // console.log("calling authentication service");
       const token = await login(payload);
       router.push('/home');
     } catch (error) {

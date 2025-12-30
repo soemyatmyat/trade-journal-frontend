@@ -10,6 +10,14 @@
 // creates a Date object from ISO-8601 input and convert it into a string in UTC (example: "2025-08-31T12:34:56.789Z")
 // split at 'T' and take the first part whic his the date. T separates date and time and Z is for UTC (zero offset)
 export const formatDateToUTC = (value) => new Date(value).toISOString().split('T')[0];
+export const formatDateToBrowserTZ = (value) => {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
 
 // Build a range centered on median, std is step. 
 export const builtRange = (start, end, mid, step = 1) => {

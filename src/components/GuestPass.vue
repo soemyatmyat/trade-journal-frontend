@@ -16,24 +16,24 @@
 </template>
 
 <script setup>
-import { useToast } from "primevue/usetoast";
-import { ref } from 'vue';
+    import { useToast } from "primevue/usetoast";
+    import { ref } from 'vue';
 
-const toast = useToast();
-const visible = ref(false);
+    const toast = useToast();
+    const visible = ref(false);
 
-const showTemplate = () => {
-    if (!visible.value) {
-        toast.add({ severity: 'success', title: 'Guest Pass', text1: 'username: guest-5291', text2:'password: ]Jvx8BVDnB+{w', group: 'bc' });
-        visible.value = true;
-    } 
-    setTimeout(() => {
-        toast.removeAllGroups();
+    const showTemplate = () => {
+        if (!visible.value) {
+            toast.add({ severity: 'success', title: 'Guest Pass', text1: 'username: guest-5291', text2:'password: ]Jvx8BVDnB+{w', group: 'bc' });
+            visible.value = true;
+        } 
+        setTimeout(() => {
+            toast.removeAllGroups();
+            visible.value = false;
+        }, 10000); // 10 seconds
+    };
+
+    const onClose = () => {
         visible.value = false;
-    }, 10000);
-};
-
-const onClose = () => {
-    visible.value = false;
-}
+    }
 </script>
