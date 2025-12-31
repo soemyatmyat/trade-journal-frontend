@@ -18,7 +18,7 @@
         <Button label="Go!" @click="retrieveData" />
       </div>
       <div class="col-12">
-        <InlineMessage v-if="showError" severity="error">{{errMsg}}</InlineMessage>
+        <InlineMessage v-if="ui.showError" severity="error">{{ui.errMsg}}</InlineMessage>
       </div>
 
     </div>
@@ -26,7 +26,7 @@
   <!-- Returns -->
   <div class="grid nested-grid">
     <!-- Spinner -->
-    <div class="col-12 text-center" v-if="isLoading">
+    <div class="col-12 text-center" v-if="ui.isLoading">
       <div class="spinner-border text-primary" role="status">
         <ProgressSpinner style="width: 50px; height: 50px;" />
         <span class="text-center">Loading...</span>
@@ -49,23 +49,24 @@
     <div class="col-7">
       <div class="grid nested-grid">
         <div class="col-6" > <!-- Price Movement Historgram -->    
-          <Histogram :title="histChart.title" :data="histChart.data" />
+          <Histogram :title="charts.histChart.title" :data="charts.histChart.data" />
         </div>
         <div class="col-6" > <!-- Sentimental Donut -->
-          <Donut :title="donutChart.title" :data="donutChart.data" />
+          <Donut :title="charts.donutChart.title" :data="charts.donutChart.data" />
         </div>
         <div class="col-12" > <!-- Percentage Change in Price -->
-          <LineChart :title="lineChart.title" :data="lineChart.data" />
+          <LineChart :title="charts.lineChart.title" :data="charts.lineChart.data" />
         </div>
         <div class="col-6"> <!-- Earnings vs. Expectations Dual Axis -->
-          <DualAxis :title="dualAxisChart.title" :data="dualAxisChart.data" />
+          <DualAxis :title="charts.dualAxisChart.title" :data="charts.dualAxisChart.data" />
         </div>
         <div class="col-6"> <!-- Longest Streaks Pie -->
-          <Pie :title="pieChart.title" :data="pieChart.data" />
+          <Pie :title="charts.pieChart.title" :data="charts.pieChart.data" />
         </div>
       </div>
     </div>
   </div>
+  <!-- Insider -->
   <div class="grid">
     <div class="col-12" v-if="insidertradesData">
       <h3 style="text-align:center;">SEC Form 4 Insider Trading </h3>
@@ -80,20 +81,24 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, reactive } from 'vue';
   import { getHistoricalPrice, getMetrics } from '@/services/api';
+  import { getInsiderTrades } from '@/services/insiderTrades';
   import { stock_columns, insider_trades_columns } from '@/components/Columns.js';
   import { formatDateToUTC, getHistogramValues } from '@/services/util';
-  import { getInsiderTrades } from '@/services/insiderTrades';
 
-  const isLoading = ref(false);
-  const showError = ref(false);
-  const errMsg = ref('');
+  // declare variables
+  const ui = reactive({
+    isloading: false,
+    showError: false,
+    errMsg: '',
+  });
+
   const data = ref();
   const insidertradesData = ref();
-  const ticker = ref({
+  const ticker = reactive({
     symbol: 'AAPL',
-    from: formatDateToUTC(new Date('2024-01-01')), 
+    from: formatDateToUTC(new Date('2025-01-01')), 
     to: formatDateToUTC(new Date(Date.now())),
     frequency: 'Weekly'
   })
@@ -103,40 +108,24 @@
     data: [],
   });
 
-  const histChart = ref({
-    title: '',
-    data: [],
+  const charts = reactive({
+    histChart: { title: '', data: []},
+    donutChart: { title: '', data: []},
+    lineChart: { title: '', data: []},
+    pieChart: { title: '', data: []},
+    dualAxisChart: { title: '', data: []},
   });
-
-  const donutChart = ref({
-    title: '',
-    data: [],
-  })
-
-  const lineChart = ref({
-    title: '',
-    data: [],
-  })
-
-  const pieChart = ref({
-    title: '',
-    data: [],
-  })
-
-  const dualAxisChart = ref({
-    title: '',
-    data: [],
-  })
 
   const retrieveData = async () => {    
     try {
-      isLoading.value = true;
-      showError.value = false;
-      //let query = JSON.parse(JSON.stringify(ticker.value));
-      let query = { ...ticker.value }; // Shallow copy
-      query.from = formatDateToUTC(new Date(query.from));
-      query.to = formatDateToUTC(new Date(query.to));
+      ui.isLoading = true;
+      ui.showError = false;
+      let query = { ...ticker }; // Shallow copy
+    
+      query.from = formatDateToUTC(new Date(ticker.from));
+      query.to = formatDateToUTC(new Date(ticker.to));
 
+      // Fetch data concurrently from different services
       const [historicalRes, metricsRes, insiderTradesRes] = await Promise.allSettled([
         getHistoricalPrice(query.symbol, query.from, query.to, 'W'),
         getMetrics(query.symbol),
@@ -153,28 +142,30 @@
         percentages = data.value.map(item => item.percentage);
       } else {
         data.value = undefined;
-        histChart.value = { title: '', data: [] };
-        donutChart.value = { title: '', data: [] };
-        lineChart.value = { title: '', data: [] };
-        pieChart.value = { title: '', data: [] };
+        charts.histChart = { title: '', data: [] };
+        charts.donutChart = { title: '', data: [] };
+        charts.lineChart = { title: '', data: [] };
+        charts.pieChart = { title: '', data: [] };
         //console.log("Failed to fetch historical prices:", histChart.value);
         //console.error("Failed to fetch historical prices:", historicalRes.reason);
       }
 
+      // build charts
       if (diffs.length > 0) {
-        histChart.value.title = "Price Movement Histogram";
-        histChart.value.data = diffs;
-        donutChart.value.title = "Sentimental Donut";
-        donutChart.value.data = diffs;
-        pieChart.value.title = "Longest Streaks"
-        pieChart.value.data = diffs;
+        charts.histChart.title = "Price Movement Histogram";
+        charts.histChart.data = diffs;
+        charts.donutChart.title = "Sentimental Donut";
+        charts.donutChart.data = diffs;
+        charts.pieChart.title = "Longest Streaks"
+        charts.pieChart.data = diffs;
       }
       if (dates.length > 0 && percentages.length > 0) {
-        lineChart.value.title = "Percentage Change in Price";
-        lineChart.value.data = [dates.reverse(), percentages.reverse()];
+        charts.lineChart.title = "Percentage Change in Price";
+        charts.lineChart.data = [dates.reverse(), percentages.reverse()];
         //console.log("LineChart: ", lineChart.value.data);
       }
 
+      // build metrics and dual axis chart for earnings
       var earningsHistory = [];
       var earningsHistoryDates = [];
       var earningsHistorySurprise = [];
@@ -183,14 +174,14 @@
       if (metricsRes.status === 'fulfilled') {
         stats.value.data = metricsRes.value.data;
         earningsHistory = metricsRes.value.data.earningsHistory || []; // 2020-01-28T21:00:00+00:00
-        earningsHistory = earningsHistory.slice(0, 12); // keep only the most recent 8 entries
+        earningsHistory = earningsHistory.slice(0, 12); // keep only the most recent 12 entries
         earningsHistoryDates = earningsHistory.map(item => item['Earnings Date'].split('T')[0]); // only keep date part
         // todo: get the index for the date range defined by query.from and query.to, and slice the arrays accordingly
         earningsHistorySurprise = earningsHistory.map(item => item['Surprise(%)']);
         earningsHistoryEPSEstimate = earningsHistory.map(item => item['EPS Estimate']);
         earningsHistoryReportedEPS = earningsHistory.map(item => item['Reported EPS']);
-        dualAxisChart.value.title = "Earnings vs. Expectations";
-        dualAxisChart.value.data = [earningsHistoryDates.reverse(), earningsHistoryEPSEstimate.reverse(), earningsHistoryReportedEPS.reverse(), earningsHistorySurprise.reverse()];
+        charts.dualAxisChart.title = "Earnings vs. Expectations";
+        charts.dualAxisChart.data = [earningsHistoryDates.reverse(), earningsHistoryEPSEstimate.reverse(), earningsHistoryReportedEPS.reverse(), earningsHistorySurprise.reverse()];
         //console.log(dualAxisChart.value.data);
       } else {
         stats.value.data = [];
@@ -201,49 +192,49 @@
         insidertradesData.value = insiderTradesRes.value.data;
       } else {
         insidertradesData.value = undefined;
-        //console.error("Failed to fetch insider trades:", insiderTradesRes.reason);
+        console.error("Failed to fetch insider trades:", insiderTradesRes.reason);
       }
 
+      // if any of the requests failed, show an error message
       if (historicalRes.status == 'rejected' || metricsRes.status == 'rejected' || insiderTradesRes.status == 'rejected') {
-        showError.value = true;
+        ui.showError = true;
         if (historicalRes.status == 'rejected' && historicalRes.reason && historicalRes.reason.response) {
           if (historicalRes.reason.response.data && historicalRes.reason.response.data.detail) {
-            errMsg.value = historicalRes.reason.response.data.detail;
+            ui.errMsg = historicalRes.reason.response.data.detail;
           } else {
-            errMsg.value = "Failed to fetch historical data.";
+            ui.errMsg = "Failed to fetch historical data.";
           }
         } else if (metricsRes.status == 'rejected' && metricsRes.reason && metricsRes.reason.response) {
           if (metricsRes.reason.response.data && metricsRes.reason.response.data.detail) {
-            errMsg.value = metricsRes.reason.response.data.detail;
+            ui.errMsg = metricsRes.reason.response.data.detail;
           } else {
-            errMsg.value = "Failed to fetch metrics.";
+            ui.errMsg = "Failed to fetch metrics.";
           }
         } else if (insiderTradesRes.status == 'rejected' && insiderTradesRes.reason && insiderTradesRes.reason.response) {
-          showError.value = false;
-          // if (insiderTradesRes.reason.response.data && insiderTradesRes.reason.response.data.detail) {
-          //   errMsg.value = insiderTradesRes.reason.response.data.detail;
-          // } else {
-          //   errMsg.value = "Failed to fetch insider trades.";
-          // }
+          ui.showError = false;
+          if (insiderTradesRes.reason.response.data && insiderTradesRes.reason.response.data.detail) {
+            ui.errMsg = insiderTradesRes.reason.response.data.detail;
+          } else {
+            ui.errMsg = "Failed to fetch insider trades.";
+          }
         } else {
-          errMsg.value = "An error occurred while fetching data.";
+          ui.errMsg = "An error occurred while fetching data.";
         }
       } else {
-        showError.value = false;
+        ui.showError = false;
       }
 
     } catch (error) {
-      console.log("Error: ", error);
-      showError.value = true;
-      if (error.response != undefined) {
-        if (error.response.data != undefined) {
-          if (error.response.data.detail != undefined) {
-            errMsg.value = error.response.data.detail;
-          }
-        }
+      // console.log("Error: ", error);
+      ui.showError = true;
+      if (error.response != undefined && 
+        error.response.data != undefined && 
+        error.response.data.detail != undefined) {
+          ui.errMsg = error.response.data.detail;
       }
+      
     } finally {
-      isLoading.value = false;
+      ui.isLoading = false;
     }
   }
 

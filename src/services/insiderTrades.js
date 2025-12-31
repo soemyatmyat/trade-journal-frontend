@@ -1,13 +1,6 @@
 import axios from 'axios';
-import { defineStore } from 'pinia';
-
-// Helper to get cookie value by name
-function getCookie(name) {
-  return document.cookie
-    .split('; ')
-    .find(row => row.startsWith(name + '='))
-    ?.split('=')[1];
-}
+import { useAuthStore } from './auth';
+import { getCookie } from '@/services/util';
 
 // Axios instance for insider trades API
 const insidertrades = axios.create({
@@ -19,39 +12,36 @@ const insidertrades = axios.create({
 });
 
 // Pinia store to manage authentication state
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    accessToken: null,
-  }),
-  actions: {
-    setToken(token) {
-      this.accessToken = token;
-    },
-    clearToken() {
-      this.accessToken = null;
-    },
-    logout() {
-      this.clearToken();
-    },
-  },
-});
+// export const useAuthStore = defineStore('auth', {
+//   state: () => ({
+//     accessToken: null,
+//   }),
+//   actions: {
+//     setToken(token) {
+//       this.accessToken = token;
+//     },
+//     clearToken() {
+//       this.accessToken = null;
+//     },
+//     logout() {
+//       this.clearToken();
+//     },
+//   },
+// });
 
 // Request interceptor to attach Authorization and CSRF headers
-insidertrades.interceptors.request.use(
-  (config) => {
+insidertrades.interceptors.request.use(async (config) => {
     const auth = useAuthStore();
-    if (auth.accessToken) {
-      config.headers.Authorization = `Bearer ${auth.accessToken}`;
+    if (auth.tokens['insider']) {
+      config.headers.Authorization = `Bearer ${auth.tokens['insider']}`;
     }
-
     // Attach CSRF token only for refresh endpoint
-    if (config.url && config.url.includes('/auth/refresh')) {
+    if (config.url && config.url.startsWith('/auth/refresh')) {
       const csrfToken = getCookie('csrf_token');
       if (csrfToken) {
         config.headers['X-CSRF-TOKEN'] = csrfToken;
       }
     }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -76,7 +66,7 @@ insidertrades.interceptors.response.use(
           withCredentials: true,
         });
         const { access_token } = response.data; // get the new access_token from the refresh response
-        auth.setToken(access_token);
+        auth.setToken('insider', access_token);
         originalRequest.headers.Authorization = `Bearer ${access_token}`; // update the Authorization header with the new token
         return insidertrades.request(originalRequest); // retry the original request with the new token
       } catch (refreshError) {
@@ -84,6 +74,11 @@ insidertrades.interceptors.response.use(
         auth.logout(); // clear the token in the store
         return Promise.reject(refreshError);
       }
+    }
+
+    if (error.response && error.response.status === 403) { // for forbidden error, force log out 
+      console.error('Forbidden: ', error.response.data);
+      auth.logout();
     }
 
     return Promise.reject(error);
@@ -101,7 +96,7 @@ async function login() {
     const response = await insidertrades.post('/auth/token', params);
     const { access_token } = response.data;
     const auth = useAuthStore();
-    auth.setToken(access_token);
+    auth.setToken('insider',access_token);
     return access_token;
   } catch (err) {
     console.error('Login failed:', err.response?.data || err.message);
@@ -112,7 +107,7 @@ async function login() {
 // Fetch insider trades data, ensuring user is logged in
 export const getInsiderTrades = async (ticker_id, from_date, to_date) => {
   const auth = useAuthStore();
-  if (!auth.accessToken) {
+  if (!auth.tokens['insider']) {
     await login();
   }
 

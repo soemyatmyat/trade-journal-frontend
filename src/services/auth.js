@@ -2,10 +2,15 @@ import { defineStore } from 'pinia';
 import jwtDecode from 'jwt-decode';
 import api from './api';
 
-// Pinia store to manage authentication state
+let refreshPromise = null;
+
+// Pinia store to manage authentication state and own token lifecycle
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    accessToken: null
+    tokens: {
+      access: null,
+      insider: null,
+    },
   }),
   getters: {
     // check if there is a token and if it's still valid. If expired, return false
@@ -18,29 +23,47 @@ export const useAuthStore = defineStore('auth', {
         const { exp } = jwtDecode(state.accessToken)
         return Date.now() >= exp * 1000
       } catch {
-        return true
+        return false
       }
     }
   },
   actions: {
-    setToken(token) {
-      this.accessToken = token;
-    },
-    clearToken() {
-      this.accessToken = null;
-    },
-    async refreshToken() {
+    async getAccessToken(payload) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded' // html form format (username & password)
+        }
+      };
       try {
-        const res = await api.post('/auth/refresh')  
-        const access_token = res.data.access_token;
-        this.setToken(access_token)  
+        const response = await api.post('/auth/token', payload, headers); // post to the api /auth/token endpoint
+        const access_token = response.data.access_token;
+        this.setToken('access',access_token);
+      } catch (err) {
+        this.clearToken();
+        throw err;
+      }
+    },
+    setToken(service, token) {
+      this.tokens[service] = token;
+    },
+    clearToken(service='access') {
+      this.tokens[service] = null;
+    },
+    async refreshAccessToken() {
+      try {
+        const response = await api.post('/auth/refresh', null, {
+          withCredentials: true,
+        }); 
+        const access_token = response.data.access_token;
+        this.setToken('access',access_token)  
       } catch (err) {
         this.clearToken()
         throw err
       }
     },
     logout() {
-      this.clearToken();
+      this.clearToken('access');
+      this.clearToken('insider');
     },
   }
 });

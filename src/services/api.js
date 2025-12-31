@@ -1,83 +1,76 @@
 import axios from 'axios';
 import { useAuthStore } from './auth';
-import jwtDecode from 'jwt-decode';
 import router from '@/router'
-
-// Helper to get cookie value by name
-function getCookie(name) {
-  return document.cookie
-    .split('; ')
-    .find(row => row.startsWith(name + '='))
-    ?.split('=')[1];
-}
+import { getCookie } from '@/services/util';
 
 // Axios instance for BE API
 const api = axios.create({
   baseURL: import.meta.env.VITE_BE_API,
-  withCredentials: true,
-  xsrfCookieName: "csrf_token",
-  xsrfHeaderName: "X-CSRF-TOKEN"
+  withCredentials: true, // send cookies with requests
+  xsrfCookieName: "csrf_token", // name of the cookie to read the CSRF token from
+  xsrfHeaderName: "X-CSRF-TOKEN" // name of the header to send the CSRF token in
 });
 
 // use interceptors to globally intercept and modify requests or responses 
-// before they are handled by the .then() or .catch() methods of the promise. 
+// **before** they are handled by the .then() or .catch() methods of the promise. 
 api.interceptors.request.use(async (config) => {
   const auth = useAuthStore()
   // console.log('Request URL:', config.url);
-  // CSRF token for refresh only
-  if (config.url?.includes('/auth/refresh')) {
+
+  if (config.url?.startsWith('/auth/refresh')) { // for refresh endpoint, only add CSRF token
     const csrfToken = getCookie('csrf_token')
-    if (csrfToken) config.headers['X-CSRF-TOKEN'] = csrfToken
+    // console.log('CSRF Token for refresh:', csrfToken);
+    if (csrfToken) config.headers['X-CSRF-TOKEN'] = csrfToken 
     return config
   }
 
-  // skip these endpoints for checking access token
+  // skip these endpoints for checking access token // todo: should it be in the env?
   const skipEndpoints = [
     '/auth/token',
     '/tickers/historical_prices/',
     '/tickers/metrics/'
   ];
-  
   // If the callback returns true for any element, .some() immediately returns true.
   if (skipEndpoints.some(endpoint => config.url?.startsWith(endpoint))) {
     // console.log(`Skipping auth check for ${config.url}`);
     return config
   }
 
-  // // Allow login request without token
-  // if (config.url?.includes('/auth/token')) {
-  //   return config
-  // }
-
-  // For other requests, check access token and self-heal if expired
-  if (auth.accessToken) {
+  // For protected endpoints, check access token and self-heal if expired
+  if (auth.tokens['access']) {
     try {
-      const { exp } = jwtDecode(auth.accessToken)
-      if (Date.now() >= exp * 1000) {
-        await refreshToken()
+      if (auth.isExpired) {
+        await auth.refreshAccessToken()
       }
-      config.headers.Authorization = `Bearer ${auth.accessToken}`
+      config.headers.Authorization = `Bearer ${auth.tokens['access']}`
     } catch (err) {
       console.error('Error decoding or refreshing token:', err)
-      auth.logout()
+      auth.logout() 
       router.push({ name: 'login' })
       return Promise.reject(err)
     }
   } else {
-    auth.logout()
-    router.push({ name: 'login' })
-    return Promise.reject(new Error('No access token'))
+    try {
+      await auth.refreshAccessToken()
+      config.headers.Authorization = `Bearer ${auth.tokens['access']}`
+    } catch (err) {
+      auth.logout()
+      router.push({ name: 'login' })
+      return Promise.reject(new Error('No access token'))
+    }
   }
   return config
 }, (error) => Promise.reject(error))
 
-// Response interceptor to handle 401 and token refresh
+// use interceptor to handle 401 and token refresh 
+// **after** response is received
 api.interceptors.response.use(
-  (response) => response, // if no server error, return response as is
+  (response) => response, // if no server error, return the response as is
   async (error) => {
     const auth = useAuthStore();
     const originalRequest = error.config;
 
+    // otherwise, rehydrate token on 401 response though this is a safe-guard
     if (
       error.response &&
       error.response.status === 401 &&
@@ -90,7 +83,7 @@ api.interceptors.response.use(
           withCredentials: true,
         });
         const { access_token } = response.data.access_token; // get the new access_token from the refresh response
-        auth.setToken(access_token);
+        auth.setToken('access', access_token);
         originalRequest.headers.Authorization = `Bearer ${access_token}`; // update the Authorization header with the new token
         return api.request(originalRequest); // retry the original request with the new token
       } catch (refreshError) {
@@ -100,46 +93,18 @@ api.interceptors.response.use(
       }
     }
 
+    auth.logout(); // clear the token in the store
     return Promise.reject(error);
   }
 );
 
-// Refresh token function
-export const refreshToken = async () => {
-  try {
-    const response = await api.post('/auth/refresh', null, {
-      withCredentials: true,
-    });
-    const access_token = response.data.access_token;
-    const auth = useAuthStore();
-    auth.setToken(access_token);
-    return access_token;
-  } catch (err) {
-    const auth = useAuthStore();
-    auth.logout();
-    console.error('Login failed:', err.response?.data || err.message);
-    // throw err;
-    return null;
-  }
-};
-
-// LOGIN
+// login function
 export const login = async (payload) => {
-  const headers = {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
-  };
   try {
-    const response = await api.post('/auth/token', payload, headers);
-    const access_token = response.data.access_token;
-    const auth = useAuthStore(); // call pinia and set the token
-    auth.setToken(access_token);
-    return access_token
+    const auth = useAuthStore();
+    await auth.getAccessToken(payload);
   } catch (err) {
-    //console.error(err); //todo: to remove
     console.error('Login failed:', err.response?.data || err.message);
-    throw err;
   }
 }
 

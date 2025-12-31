@@ -1,7 +1,7 @@
 import './assets/main.css'
 
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createPinia } from 'pinia' 
 import App from './App.vue'
 import router from './router'
 import 'primevue/resources/themes/lara-dark-teal/theme.css'
@@ -12,11 +12,11 @@ import ToastService from 'primevue/toastservice';
 import ProgressSpinner from 'primevue/progressspinner';
 
 const app = createApp(App)
-app.use(createPinia())
-app.use(router)
-app.use(PrimeVue, { ripple: true })
-app.use(ToastService);
-app.component('ProgressSpinner',ProgressSpinner);
+app.use(createPinia())  // install pinia as state management
+app.use(router) // install router
+app.use(PrimeVue, { ripple: true }) // install & enable ripple effect
+app.use(ToastService); // install toast service
+app.component('ProgressSpinner',ProgressSpinner); // register spinner 
 app.component('Toast', Toast);
 app.mount('#app')
 

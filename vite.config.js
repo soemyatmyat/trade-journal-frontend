@@ -15,11 +15,11 @@ export default defineConfig({
     }
   },
   plugins: [
-    vue(), 
-    vueJsx(),
+    vue(), // standard SFC support
+    vueJsx(), // JSX/TSX support in Vue
     Components({
       resolvers: [
-        PrimeVueResolver()
+        PrimeVueResolver() // import PrimeVue components as needed
       ]
     })
   ],

@@ -1,13 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/services/auth';
-import { refreshToken } from '@/services/api';
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import AnalysisView from '../views/AnalysisView.vue'
 import TestView from '../views/TestView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL), 
   routes: [
     {
       path: '/',
@@ -17,18 +16,18 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: HomeView, 
-      meta: { requiresAuth: true } 
+      component: HomeView, // render home
+      meta: { requiresAuth: true }  // after authentication
     },
     {
       path: '/analyze',
       name: 'analysis',
-      component: AnalysisView, // check if token is still valid and render ui
+      component: AnalysisView, // todo: check if token is still valid and render ui
     },
     {
       path: '/test',
       name: 'test',
-      component: TestView,
+      component: TestView, // to remove laters
     },
     // {
     //   path: '/about',
@@ -41,32 +40,21 @@ const router = createRouter({
   ]
 })
 
+// global guard
 router.beforeEach(async (to, from, next) => {
   // Check if the route requires authentication
   if (to.meta.requiresAuth) {
-    const auth = useAuthStore();
-    // Check if there is a token and valid
-    if (!auth.accessToken) {
+    const auth = useAuthStore(); // Check if there is a token and valid
+    if (!auth.accessToken) { // if no token
       // Check if there is a refresh token and try to refresh
-      await refreshToken().catch(() => {
-        next({ name: 'login' });
+      try {
+        await auth.refreshToken();
+      } catch {
+        return next({ name: 'login' }); // redirect to login if refresh fails
       }
-      );
-      next();
-    } else {
-      // Continue to the protected route
-      next();
-    }
-  } else {
-    // Continue to other routes
-    next();
-  }
+    } 
+  } 
+  return next(); // Continue to next route
 });
-
-// function isAuthenticated() {
-//   // Implement logic to check if the user is authenticated
-//   // For example, check if there is a valid authentication token
-//   return sessionStorage.getItem('token') !== null;
-// }
 
 export default router

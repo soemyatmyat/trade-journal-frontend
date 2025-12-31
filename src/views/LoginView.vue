@@ -47,8 +47,8 @@
   const callAuthenticationService = async (payload) => {
     try {
       // console.log("calling authentication service");
-      const token = await login(payload);
-      router.push('/home');
+      const token = await login(payload); // pass the username and password to login service
+      router.push('/home'); // send to home page
     } catch (error) {
       // axois error: most likely authentication error  
       if (error.response != undefined) {
@@ -58,12 +58,11 @@
           }
         }
       }
-      
       showError.value = true;
-
     }
   }
 
+  // handles login form submission
   const handleLoginSubmit = async () => {
     const params = new URLSearchParams();
     params.append('username', username.value);
