@@ -46,7 +46,6 @@
 
   const callAuthenticationService = async (payload) => {
     try {
-      // console.log("calling authentication service");
       const token = await login(payload); // pass the username and password to login service
       router.push('/home'); // send to home page
     } catch (error) {

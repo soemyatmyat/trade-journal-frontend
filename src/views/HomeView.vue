@@ -237,6 +237,7 @@
   const confirmDeleteDialog = ref(false);
   const tradeDialog = ref(false);
   const trades = ref();
+  const options = ref(); // remove if not used
   // filters is dynamic 
   const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -275,29 +276,30 @@
     }
   });
 
-  const test = async () => {
-    try {
-      let queryOption = {}
-      queryOption.ticker = "AAPL";
-      queryOption.type = "Call";
-      queryOption.expire_date = "2024-04-05";
-      queryOption.strike_price = 177.5;
-      queryOption.id = queryOption.ticker + queryOption.type + queryOption.expire_date + queryOption.strike_price;
-      const existing = await accessIndexedDb.getDataIndexedDb(queryOption.id, "options");
-      if (existing == undefined) {
-        const response = await getOption(queryOption);
-        accessIndexedDb.storeData(response.data, "options")
-        //console.log("response: ", response.data)
-      } else {
-        // console.log("existing: ", existing);
-      }
+  // const test = async () => {
+  //   try {
+  //     let queryOption = {}
+  //     queryOption.ticker = "AAPL";
+  //     queryOption.type = "Call";
+  //     queryOption.expire_date = "2024-04-05";
+  //     queryOption.strike_price = 177.5;
+  //     queryOption.id = queryOption.ticker + queryOption.type + queryOption.expire_date + queryOption.strike_price;
+  //     const existing = await accessIndexedDb.getDataIndexedDb(queryOption.id, "options");
+  //     if (existing == undefined) {
+  //       const response = await getOption(queryOption);
+  //       accessIndexedDb.storeData(response.data, "options")
+  //       //console.log("response: ", response.data)
+  //     } else {
+  //       // console.log("existing: ", existing);
+  //     }
       
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
   // 3. fetch current price for stock ticker
+  
   const fetchTickerData = async (tradeElement) => {
     const existing = await accessIndexedDb.getDataIndexedDb(tradeElement.ticker.toLowerCase(), "tickers");
     if (existing == undefined) {
@@ -364,10 +366,10 @@
   const processTradeElement = async (tradeElement) => {
     if (tradeElement.closed_price == null) { // UNREALIZED GAIN-LOSS
       if (tradeElement.category === 'Long' || tradeElement.category === 'Short') {
-        tradeElement = await fetchTickerData(tradeElement);
+        tradeElement = await fetchTickerData(tradeElement); // trades 
         await computeTradePerformance(tradeElement);
       } else if (tradeElement.category === 'Call' || tradeElement.category === 'Put') {
-        tradeElement = await fetchOptionData(tradeElement);
+        tradeElement = await fetchOptionData(tradeElement); // options 
         await computeOptionPerformance(tradeElement);
       }
     } else {  // REALIZED GAIN-LOSS
@@ -391,7 +393,7 @@
     try {
       const response = await getPositions(); // call backend API and retrieve the position // todo: should I cache it?
       const tradesData = response.data; // array of trade objects
-      const fetchTickerPromises = tradesData.map(processTradeElement); // array of promises
+      const fetchTickerPromises = tradesData.map(processTradeElement); // process each trade element concurrently
       const resolvedTrades = await Promise.all(fetchTickerPromises);
       // convert it back to browser's local time
       for (var ele of resolvedTrades) {

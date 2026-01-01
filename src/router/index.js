@@ -45,14 +45,14 @@ router.beforeEach(async (to, from, next) => {
   // Check if the route requires authentication
   if (to.meta.requiresAuth) {
     const auth = useAuthStore(); // Check if there is a token and valid
-    if (!auth.accessToken) { // if no token
+    if (!auth.tokens['access']) { // if no token
       // Check if there is a refresh token and try to refresh
       try {
         await auth.refreshToken();
       } catch {
         return next({ name: 'login' }); // redirect to login if refresh fails
       }
-    } 
+    }  
   } 
   return next(); // Continue to next route
 });
