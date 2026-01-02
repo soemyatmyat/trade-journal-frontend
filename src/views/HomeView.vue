@@ -1,5 +1,4 @@
 <template>
-  <!-- Bar -->
   <div class="grid">
     <div class="col">
       <Toolbar class="">
@@ -15,7 +14,6 @@
     </div>
   </div>
 
-  <!-- Data Table (Stocks) ---->
   <div class="grid">
     <div class="col">
       <DataTable 
@@ -24,7 +22,6 @@
       paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading" :size="'small'"
       :globalFilterFields="['category', 'open_date', 'close_date', 'ticker', 'qty', 'trade_price', 'closed_price', 'remark']">
       
-        <!-- table headers -->
         <template #header>
           <div> <!---class="flex justify-content-end"> Global Keyword Search -->
             <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
@@ -33,7 +30,6 @@
         <template #empty> No trades found. </template>
         <template #loading> Loading data. Please wait. </template>
 
-        <!-- START:: table content -->
         <Column 
           v-for="col of columns" style="min-width: 8rem" sortable 
             :key="col.field" 
@@ -90,93 +86,11 @@
             <Column :footer="''" />
           </Row>
         </ColumnGroup>
-        <!-- END:: table content -->
-      </DataTable>
-    </div>
-  </div>
-
-  <!-- Data Table (Options) ---->
-  <div class="grid">
-    <div class="col">
-      <DataTable 
-      v-model:filters="filters" :value="trades" @filter="recomputeBasedonFilters" 
-      editMode="cell" @cell-edit-complete="onCellEditComplete" 
-      paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading" :size="'small'"
-      :globalFilterFields="['category', 'open_date', 'close_date', 'ticker', 'qty', 'trade_price', 'closed_price', 'remark']">
-      
-        <!-- table headers -->
-        <template #header>
-          <div> <!---class="flex justify-content-end"> Global Keyword Search -->
-            <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
-          </div>
-        </template>
-        <template #empty> No trades found. </template>
-        <template #loading> Loading data. Please wait. </template>
-
-        <!-- START:: table content -->
-        <Column 
-          v-for="col of columns" style="min-width: 8rem" sortable 
-            :key="col.field" 
-            :field="col.field" 
-            :header="col.header" 
-            :editable="col.editable"
-            :showFilterMenu="col.editable ? true : false">
-          <!-- data -->
-          <template #body="{ data }">
-            {{ typeof data[col.field] === 'number' ? data[col.field].toLocaleString('en-US', { minimumFractionDigits: 2 }) : data[col.field] }}
-          </template>        
-          <!-- filter -->
-          <template #filter="{ filterModel, filterCallback }">
-            <template v-if="col.filterable">
-              <InputText v-model="filterModel.value" type="text" @input="filterCallback()" class="p-column-filter" />
-            </template>
-          </template>
-          <!-- edit -->
-          <template #editor="{ data, field }">
-            <template v-if="col.editable"> <!-- only editable columns -->
-              <!-- category -->
-              <template v-if="col.options"> 
-                <Dropdown v-model="data[field]" :options="col.options" autofocus />
-              </template>
-              <!-- numbers check, qty, trade_price, option -->
-              <template v-else-if="col.type === 'float'"> 
-                <InputNumber v-model="data[field]" :minFractionDigits="2" autofocus />
-              </template>
-              <!-- date check -->
-              <template v-else-if="col.type === 'datepicker'"> 
-                <Calendar v-model="data[field]" :inputStyle="{'width': '100%'}" :readonlyInput="false" autofocus />
-              </template>     
-              <!-- remark -->     
-              <template v-else>
-                <InputText v-model="data[field]" autofocus />
-              </template>
-            </template>
-            <template v-else>
-              {{ data[field] }}
-            </template>
-          </template>
-        </Column>
-        <Column :exportable="false" style="min-width:8rem">
-          <template #body="slotProps">
-              <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDelete(slotProps.data)" />
-          </template>
-        </Column>
-        <ColumnGroup type="footer">
-          <Row>
-            <Column footer="Totals:" :colspan="9" />
-            <Column :footer="totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 , maximumFractionDigits: 2 })" /> 
-            <Column :footer="totalNetLiquid.toLocaleString('en-US', { maximumFractionDigits: 2 })" />
-            <Column :footer="totalProfitLoss.toLocaleString('en-US', { maximumFractionDigits: 2 })" />
-            <Column :footer="''" />
-          </Row>
-        </ColumnGroup>
-        <!-- END:: table content -->
       </DataTable>
     </div>
   </div>
 
   <!----------- Dialogs ----------->
-  <!-- add new -->
   <Dialog v-model:visible="tradeDialog" :style="{width: '450px'}" header="Trade Details" :modal="true" class="p-fluid">
     <div class="field" v-for="col of columns" :key="col.field">
       <template v-if="col.add">
@@ -208,7 +122,6 @@
     </div>
     </template>
   </Dialog>
-  <!-- confirm delete -->
   <Dialog v-model:visible="confirmDeleteDialog" :style="{width: '450px'}" header="Confirm" :modal="true">
     <div class="confirmation-content">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />

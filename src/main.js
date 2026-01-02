@@ -2,7 +2,7 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia' 
-import App from './App.vue'
+import App from './App.vue' // import the root component App from a single-file component.
 import router from './router'
 import 'primevue/resources/themes/lara-dark-teal/theme.css'
 import 'primeflex/primeflex.css';

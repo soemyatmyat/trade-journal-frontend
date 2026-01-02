@@ -110,6 +110,17 @@ export const login = async (payload) => {
   return null;
 }
 
+// logout function 
+export const logout = async () => {
+  try {
+    await api.post('/auth/logout', null, {
+      withCredentials: true,
+    });
+  } catch (err) {
+    console.error('Logout failed:', err.response?.data || err.message);
+  }
+}
+
 // READ == POSITIONS
 export const getPositions = () => {
   return api.get('/positions');

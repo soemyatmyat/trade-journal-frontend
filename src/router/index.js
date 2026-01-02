@@ -48,7 +48,7 @@ router.beforeEach(async (to, from, next) => {
     if (!auth.tokens['access']) { // if no token
       // Check if there is a refresh token and try to refresh
       try {
-        await auth.refreshToken();
+        await auth.refreshAccessToken();
       } catch {
         return next({ name: 'login' }); // redirect to login if refresh fails
       }
